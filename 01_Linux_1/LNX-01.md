@@ -24,12 +24,12 @@ Public key authentication provides cryptographic strength that even extremely lo
 - When the connection is successful, type whoami in the terminal. This command should show your username.
 
 ### Gebruikte bronnen
-[https://www.youtube.com/watch?v=9dhQIa8fAXU
+https://www.youtube.com/watch?v=9dhQIa8fAXU
 
-https://www.ssh.com/academy/ssh/public-key-authentication]
+https://www.ssh.com/academy/ssh/public-key-authentication
 
 ### Ervaren problemen
-[Geef een korte beschrijving van de problemen waar je tegenaan bent gelopen met je gevonden oplossing.]
+I did not nessesarily run into a problem. It was just a matter of finding the right guide and information.
 
 ### Resultaat
 Screenshot of the two OpenSSH services I had to start
