@@ -38,7 +38,7 @@ An absolute path is defined as the specifying the location of a file or director
 https://help.ubuntu.com/community/UsingTheTerminal
 
 ### Ervaren problemen
-No problems.
+Still had some issues creating text as regular user. So was using root. This was later resolved when we gave the user rights to RW and Transfered ownership from root to the user.
 
 ### Resultaat
 A screen shot of all the completed tasks
