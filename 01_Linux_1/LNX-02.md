@@ -37,8 +37,10 @@ An absolute path is defined as the specifying the location of a file or director
 ### Gebruikte bronnen
 https://help.ubuntu.com/community/UsingTheTerminal
 
+https://askubuntu.com/questions/617850/changing-from-user-to-superuser
+
 ### Ervaren problemen
-Still had some issues creating text as regular user. So was using root. This was later resolved when we gave the user rights to RW and Transfered ownership from root to the user.
+Had some issues creating text as regular user. So was using root. This was later resolved when we gave the user rights to RW and Transfered ownership from root to the user.
 
 ### Resultaat
 A screen shot of all the completed tasks
