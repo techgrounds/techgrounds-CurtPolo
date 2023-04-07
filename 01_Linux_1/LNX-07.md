@@ -54,36 +54,47 @@ No real problems here. I just had to manage my time between reading and testing 
 
 ### Resultaat
 screenshot of the scripts directory
+
 ![Alt text](../00_includes/LNX-07-Directory.PNG)
 
 screenshot of adding the directory to PATH
+
 ![Alt text](../00_includes/LNX-07-PATH.PNG)
 
 screenshot append script
+
 ![Alt text](../00_includes/LNX-07-Append.PNG)
 
 screenshot append script working
+
 ![Alt text](../00_includes/LNX-07-TextAppend.PNG)
 
 screenshot httpd script
+
 ![Alt text](../00_includes/LNX-07-HTTPDcommand.PNG)
 
 screenshot httpd script working
+
 ![Alt text](../00_includes/LNX-07-HTTPD.PNG)
 
 screenshot httpd status
+
 ![Alt text](../00_includes/LNX-07-StartAndStatus.PNG)
 
 screenshot number generator script
+
 ![Alt text](../00_includes/LNX-07-Numbercommand.PNG)
 
 screenshot number generator working
+
 ![Alt text](../00_includes/LNX-07-NumGenerator.PNG)
 
 screenshot number higher than 5 script
+
 ![Alt text](../00_includes/LNX-07-HighNumGen.PNG)
 
 screenshot higher than 5 script working
+
 ![Alt text](../00_includes/LNX-07-ProofHighGen.PNG)
 
 
