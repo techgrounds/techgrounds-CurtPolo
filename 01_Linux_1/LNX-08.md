@@ -78,4 +78,14 @@ screenshot crontab registry and function
 
 ![Alt text](../00_includes/LNX-08-CronProof.PNG)
 
+screenshot working second cron command. It was set to a minute just for testing.
+
+![Alt text](../00_includes/LNX-08-CronCom2.PNG)
+
+![Alt text](../00_includes/LNX-08-DiskSpaceCode.PNG)
+
+![Alt text](../00_includes/LNX-08-DiskScriptProof.PNG)
+
+![Alt text](../00_includes/LNX-08-WorkingCron2.PNG)
+
 
