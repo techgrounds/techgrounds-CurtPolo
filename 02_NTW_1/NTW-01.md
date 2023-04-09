@@ -52,10 +52,16 @@ But the OSI Model provides a more detailed and comprehensive framework for under
 
 Screenshot of the OSI-Model 
 
+![Alt text](../00_includes/NTW-01-OSImodelExplain.jpg)
 
+![Alt text](../00_includes/NTW-01-OSImodelExample.png)
 
+Screenshot of the TCP/IP Model
 
+![Alt text](../00_includes/NTW-01-OSIvsTCP-IP.PNG)
 
+Screenshot of OSI vs TCP/IP Model
 
+![Alt text](../00_includes/NTW-01-OSIvsTCP-IP.PNG)
 
 
