@@ -58,7 +58,7 @@ Screenshot of the OSI-Model
 
 Screenshot of the TCP/IP Model
 
-![Alt text](../00_includes/NTW-01-OSIvsTCP-IP.PNG)
+![Alt text](../00_includes/NTW-01-TCP-IP.PNG)
 
 Screenshot of OSI vs TCP/IP Model
 
