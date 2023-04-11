@@ -34,7 +34,7 @@ https://community.fs.com/blog/tcpip-vs-osi-whats-the-difference-between-the-two-
 
 
 ### Ervaren problemen
-[Geef een korte beschrijving van de problemen waar je tegenaan bent gelopen met je gevonden oplossing.]
+I did not have admin rights to the network I am on. But I resolved this by loading one on Cisco Packet Tracer and using it instead.
 
 ### Resultaat
 
@@ -92,20 +92,51 @@ Devices that amplify and regenerate signals to extend the reach of a network.
     Access Points: Layer 1 (Physical layer) and Layer 2 (Data Link layer)
     Cables: Layer 1 (Physical layer)
 
+# Router Information Methods
+
+To find the information about all the devices that are connected to your router, you must first ensure that you are connected to your router to be able to login to your router's configuration page using it's IP-address.
+
+This can be found either by looking at the back of your router for a physical lable or you can go into the CLI and type in ipconfig. The default gateway is your router's IP-address.
+
+![router ip](../00_includes/NTW-02-RouterIP.PNG)
+
+![router ip browser](../00_includes/NTW-02-RouterAccess.PNG)
+
+![router config page](../00_includes/NTW-02-RouterSetupScreen.PNG)
+
+Below you will see the method of using the CLI to find the IP of your router.
+
+![CLI router ip](../00_includes/NTW-02-2ndMethod-routerIP.PNG)
 
 
+Once you've logged in to your router's configuration page, look for a section called "Connected Devices," "Client List," or similar. For my particular case it was found in the DHCP Reservation section.
+
+![Devices Info](../00_includes/NTW-02-DevicesConnected.PNG)
+
+Another method is to use your router's CLI. (Note that I used another network to demonstrate this because the one I started with the router did not have a CLI.)
+
+The first command
+
+**"show ip dhcp binding"**
+
+Is to show the IP-address if it was provided by a DHCP server. But seeing this new network did not use DHCP, I used the following command
+
+**"show ip route"**
+
+This shows the IP-addresses of the connected devices.
+
+![CLI command](../00_includes/NTW-02-2ndMethod-CLI.PNG)
+
+![Alt text](../00_includes/NTW-02-2ndMethod-CLI-DevicesIP.PNG)
+
+The **"show arp"** command showed the IP-address and MAC-address
+
+![Alt text](../00_includes/NTW-02-2ndMethod-CLI-DevicesMAC.PNG)
 
 
+Just for reference blow are the two virtual networks I used.
 
+![Alt text](../00_includes/NTW-02-Network.PNG)
 
-
-
-
-
-
-
-
-
-
-
+![Alt text](../00_includes/NTW-02-2ndMethod-Typology.PNG)
 
