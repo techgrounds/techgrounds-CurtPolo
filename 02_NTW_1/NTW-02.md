@@ -140,3 +140,19 @@ Just for reference blow are the two virtual networks I used.
 
 ![Alt text](../00_includes/NTW-02-2ndMethod-Typology.PNG)
 
+As for where is the DHCP server located on my network. It is located on the router itself.
+
+This can be found out by looking on the router configuration page.
+
+![Alt text](../00_includes/NTW-02-DHCP-Location.PNG)
+
+Below you will see the method of using your PC's CLI to find out if your DHCP server is on your router or not.
+
+![Alt text](../00_includes/NTW-02-2ndMethod-FindDHCP.PNG)
+
+If the DHCP Server IP-Address is the same as the Default Gateway's IP-Address (router's IP-Address). That means the DHCP Server is located on your router.
+
+If they were different, that means the DHCP server is located somewhere else. Maybe on a WAP,a dedicated DHCP server or a switch.
+
+
+
