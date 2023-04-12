@@ -136,6 +136,24 @@ On the other hand, is responsible for managing the allocation of IP addresses an
     Deploy the protocol: Deploy the protocol in a test environment, and then in a production environment. This will involve configuring the necessary hardware and software, and training users on how to use the protocol.
 
 
+## Understanding a protocol
+
+I used wired shark to capture TCP Three-way handshake between my device and Techgrounds.nl. 
+
+![Alt text](../00_includes/NTW-03-TCP-Handshake.PNG)
+
+Explaining it as simple as possible, it goes as follows:
+
+1. My Device is under the source IP and Techgrounds.nl is under the Destination IP. My device initiates a connection to Techgrounds.nl, it sends a SYN (Synchronize) packet with a randomly generated sequence number.
+
+**The first SYN flag is normally set to 1 to indicate that the packet is a synchronization request. But in this case it is set to 0. When the client sets the sequence number to 0 in the first SYN packet, it is indicating to the server that it is willing to accept any initial sequence number chosen by the server. The server will then select a random initial sequence number, and include it in the ACK packet that it sends back to the client in response to the SYN packet.**
+
+2. Techgrounds.nl is now under the source IP and my device is under the destination IP. It now sends a ACK (Acknowledgement) packet back to my device, to indicate it is willing to establish a connection. So it sends back it's own sequence number and set the ACK to 1.
+
+3. To complete the three-way handshake, my device sends another ACK packet to the server, acknowledging the server's sequence number. This final ACK packet also contains data that can be used to send to the server immediately after the connection is established.
+
+
+
 
 
 
