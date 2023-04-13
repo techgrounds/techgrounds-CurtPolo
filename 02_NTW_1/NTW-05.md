@@ -1,8 +1,12 @@
 # IP Address
-[Geef een korte beschrijving van het onderwerp]
+IP (Internet Protocol) address is a unique identifier that is assigned to every device connected to the internet. It consists of a series of numbers separated by dots and can be used to identify the location of a device on a network.
 
 ## Key-terms
-[Schrijf hier een lijst met belangrijke termen met eventueel een korte uitleg.]
+**NAT-table**
+
+A NAT (Network Address Translation) table, also known as a NAT mapping table, is a table that maps the private IP addresses of devices on a local network to public IP addresses used on the internet.
+
+NAT is used to allow multiple devices on a local network to share a single public IP address for internet communication. When a device on the local network requests access to the internet, the NAT device, such as a router, replaces the source IP address of the packet with the public IP address of the NAT device.
 
 ## Opdracht
 - Find out what your public IP address of your laptop and mobile phone is on wifi.
@@ -17,6 +21,8 @@
 
 ### Ervaren problemen
 I have no admin access to the network so I am using Cisco Packet Tracer.
+
+I also had to use other ways to display my public IP address on packet tracer compared to how I would in real life.
 
 ### Resultaat
 1. To find my public IP address I used https://www.whatismyip.com/ , but also tested out the CLI option command: **"nslookup myip.opendns.com resolver1.opendns.com"**
