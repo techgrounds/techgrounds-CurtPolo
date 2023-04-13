@@ -36,6 +36,12 @@ ChatGPT
 
 https://www.udemy.com/course/complete-networking-fundamentals-course-ccna-start/
 
+http://learnccna.net/ip-subnet-calculator-2/D8A43B6EE6F0CC30DD82E359FBE9743454B8F5098894BB9384B6832A02D2234D49DE839783CA5A55A2F46F4518DD765B/?net_class=A
+
+https://davidbombal.com/subnetting-concepts-calculator/
+
+https://www.solarwinds.com/free-tools/advanced-subnet-calculator?CMP=BIZ-TAD-DBMBL-SW_WW_X_PP_PPD_FT_EN_TOPFT_SW-SUB-X_X_X_X-Q416
+
 ### Ervaren problemen
 [Geef een korte beschrijving van de problemen waar je tegenaan bent gelopen met je gevonden oplossing.]
 
