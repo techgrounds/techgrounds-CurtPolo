@@ -43,10 +43,10 @@ https://davidbombal.com/subnetting-concepts-calculator/
 https://www.solarwinds.com/free-tools/advanced-subnet-calculator?CMP=BIZ-TAD-DBMBL-SW_WW_X_PP_PPD_FT_EN_TOPFT_SW-SUB-X_X_X_X-Q416
 
 ### Ervaren problemen
-[Geef een korte beschrijving van de problemen waar je tegenaan bent gelopen met je gevonden oplossing.]
+Main problem was myself trying to overthink the task. I had to move back and try to keep it much simpler.
 
 ### Resultaat
-[Omschrijf hoe je weet dat je opdracht gelukt is (gebruik screenshots waar nodig).]
+![Alt text](../00_includes/NTW-06-Networks.PNG)
 
 
 
