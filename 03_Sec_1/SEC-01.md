@@ -41,6 +41,10 @@ I took one binary bit off the broadcast address to find the last host ip address
 
 ![Alt text](../00_includes/SEC-01-Hosts.PNG)
 
+When I did the command **nmap** on my own IP address, I received information on how many ports are closed, the latency and which ports are open.
+
+![Alt text](../00_includes/SEC-01-MY-IP.PNG)
+
 When doing the Wireshark task. I closed zoom to make thinks easier. I then closed my web-browser.
 
 Then I started Wireshark and immediately opened the web-browser. I stopped Wireshark and searched for the first point I saw activity from my browser
