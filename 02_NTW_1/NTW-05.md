@@ -35,33 +35,33 @@ I also had to use other ways to display my public IP address on packet tracer co
 
 Screenshot of my packet tracer network
 
-![Alt text](../00_includes/NTW-05-Network.PNG)
+![Alt text](../00_includes/Week-2-Network/NTW-05-Network.PNG)
 
 5. We should never have two devices on the same network with the same IP address, seeing this would cause conflicts. This means that both devices would be unable to communicate properly on the network because the network would not know which device to send data to.
 
 Below you will see that when I tried to give the smartphone the same IP as the laptop, I received the following message.
 
-![Alt text](../00_includes/NTW-05-PhoneLaptop.PNG)
+![Alt text](../00_includes/Week-2-Network/NTW-05-PhoneLaptop.PNG)
 
 6. When I changed the phone's IP to one outside the network, I lost the ability to use my router for internet connectivity. I also lost the ability to connect to devices that are still on the network.
 
 screenshot of all devices on the same network
 
-![Alt text](../00_includes/NTW-05-IP-SameNetwork.PNG)
+![Alt text](../00_includes/Week-2-Network/NTW-05-IP-SameNetwork.PNG)
 
 screenshot of the PC being able to ping the phone
 
-![Alt text](../00_includes/NTW-05-PC-Ping-Phone-SameNW.PNG)
+![Alt text](../00_includes/Week-2-Network/NTW-05-PC-Ping-Phone-SameNW.PNG)
 
 screenshot of the PC trying to ping the phone outside the network
 
-![Alt text](../00_includes/NTW-05-PC-Ping-Phone-DifferentNW.PNG)
+![Alt text](../00_includes/Week-2-Network/NTW-05-PC-Ping-Phone-DifferentNW.PNG)
 
 screenshot of the PC still being able to use the router and modem to access cisco.com
 
-![Alt text](../00_includes/NTW-05-PC-Cisco.PNG)
+![Alt text](../00_includes/Week-2-Network/NTW-05-PC-Cisco.PNG)
 
 screenhot of the Phone unable to use the router and modem to access cisco.com seeing it is not in the network
 
-![Alt text](../00_includes/NTW-05-Phone-Cisco.PNG)
+![Alt text](../00_includes/Week-2-Network/NTW-05-Phone-Cisco.PNG)
 

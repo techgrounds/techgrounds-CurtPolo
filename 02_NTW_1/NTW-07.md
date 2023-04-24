@@ -32,7 +32,7 @@ I found answers online on how this can be done, but I specifically wanted to foc
 
 ### Resultaat
 Screenshot of my chosen network typology
-![Alt text](../00_includes/NTW-07-Networks.PNG)
+![Alt text](../00_includes/Week-2-Network/NTW-07-Networks.PNG)
 
 The first thing I searched for was how can I achieve what the company's main focus is on with this task and that was **security**.
 

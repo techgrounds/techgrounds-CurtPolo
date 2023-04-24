@@ -46,7 +46,7 @@ https://www.solarwinds.com/free-tools/advanced-subnet-calculator?CMP=BIZ-TAD-DBM
 Main problem was myself trying to overthink the task. I had to move back and try to keep it much simpler. I t
 
 ### Resultaat
-![Alt text](../00_includes/NTW-06-Networks.PNG)
+![Alt text](../00_includes/Week-2-Network/NTW-06-Networks.PNG)
 
 When it came to the first task I took these following steps:
 

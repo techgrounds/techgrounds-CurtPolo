@@ -98,20 +98,20 @@ To find the information about all the devices that are connected to your router,
 
 This can be found either by looking at the back of your router for a physical lable or you can go into the CLI and type in ipconfig. The default gateway is your router's IP-address.
 
-![router ip](../00_includes/NTW-02-RouterIP.PNG)
+![Alt text](../00_includes/Week-2-Network/NTW-02-RouterIP.PNG)
 
-![router ip browser](../00_includes/NTW-02-RouterAccess.PNG)
+![Alt text](../00_includes/Week-2-Network/NTW-02-RouterAccess.PNG)
 
-![router config page](../00_includes/NTW-02-RouterSetupScreen.PNG)
+![Alt text](../00_includes/Week-2-Network/NTW-02-RouterSetupScreen.PNG)
 
 Below you will see the method of using the CLI to find the IP of your router.
 
-![CLI router ip](../00_includes/NTW-02-2ndMethod-routerIP.PNG)
+![Alt text](../00_includes/Week-2-Network/NTW-02-2ndMethod-routerIP.PNG)
 
 
 Once you've logged in to your router's configuration page, look for a section called "Connected Devices," "Client List," or similar. For my particular case it was found in the DHCP Reservation section.
 
-![Devices Info](../00_includes/NTW-02-DevicesConnected.PNG)
+![Alt text](../00_includes/Week-2-Network/NTW-02-DevicesConnected.PNG)
 
 Another method is to use your router's CLI. (Note that I used another network to demonstrate this because the one I started with the router did not have a CLI.)
 
@@ -125,30 +125,30 @@ Is to show the IP-address if it was provided by a DHCP server. But seeing this n
 
 This shows the IP-addresses of the connected devices.
 
-![CLI command](../00_includes/NTW-02-2ndMethod-CLI.PNG)
+![Alt text](../00_includes/Week-2-Network/NTW-02-2ndMethod-CLI.PNG)
 
-![Alt text](../00_includes/NTW-02-2ndMethod-CLI-DevicesIP.PNG)
+![Alt text](../00_includes/Week-2-Network/NTW-02-2ndMethod-CLI-DevicesIP.PNG)
 
 The **"show arp"** command showed the IP-address and MAC-address
 
-![Alt text](../00_includes/NTW-02-2ndMethod-CLI-DevicesMAC.PNG)
+![Alt text](../00_includes/Week-2-Network/NTW-02-2ndMethod-CLI-DevicesMAC.PNG)
 
 
 Just for reference blow are the two virtual networks I used.
 
-![Alt text](../00_includes/NTW-02-Network.PNG)
+![Alt text](../00_includes/Week-2-Network/NTW-02-Network.PNG)
 
-![Alt text](../00_includes/NTW-02-2ndMethod-Typology.PNG)
+![Alt text](../00_includes/Week-2-Network/NTW-02-2ndMethod-Typology.PNG)
 
 As for where is the DHCP server located on my network. It is located on the router itself.
 
 This can be found out by looking on the router configuration page.
 
-![Alt text](../00_includes/NTW-02-DHCP-Location.PNG)
+![Alt text](../00_includes/Week-2-Network/NTW-02-DHCP-Location.PNG)
 
 Below you will see the method of using your PC's CLI to find out if your DHCP server is on your router or not.
 
-![Alt text](../00_includes/NTW-02-2ndMethod-FindDHCP.PNG)
+![Alt text](../00_includes/Week-2-Network/NTW-02-2ndMethod-FindDHCP.PNG)
 
 If the DHCP Server IP-Address is the same as the Default Gateway's IP-Address (router's IP-Address). That means the DHCP Server is located on your router.
 

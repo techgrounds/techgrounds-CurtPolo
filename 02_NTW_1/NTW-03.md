@@ -140,7 +140,7 @@ On the other hand, is responsible for managing the allocation of IP addresses an
 
 I used wired shark to capture TCP Three-way handshake between my device and Techgrounds.nl. 
 
-![Alt text](../00_includes/NTW-03-TCP-Handshake.PNG)
+![Alt text](../00_includes/Week-2-Network/NTW-03-TCP-Handshake.PNG)
 
 Explaining it as simple as possible, it goes as follows:
 
