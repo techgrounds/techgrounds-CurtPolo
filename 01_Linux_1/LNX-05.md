@@ -21,13 +21,13 @@ No issues
 
 ### Resultaat
 screenshot text file and long listing
-![longlisting](../00_includes/LNX-05-LongListing.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-05-LongListing.PNG)
 
 screenshot x permission
-![permission](../00_includes/LNX-05-Permissions.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-05-Permissions.PNG)
 
 screenshot ownership
-![ownership](../00_includes/LNX-05-Ownership.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-05-Ownership.PNG)
 
 screenshot group
-![group](../00_includes/LNX-05-Group.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-05-Group.PNG)

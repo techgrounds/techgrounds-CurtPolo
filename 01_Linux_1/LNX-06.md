@@ -42,23 +42,20 @@ I also had to seperate telnet information from the daemon information and unders
 
 ### Resultaat
 screenshot start
-![start](../00_includes/LNX-06-Start.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-06-Start.PNG)
 
 screenshot telnet install
-![Alt text](../00_includes/LNX-06-TelnetInstall.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-06-TelnetInstall.PNG)
 
 screenshot grepPID
-![PID](../00_includes/LNX-06-GrepPID.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-06-GrepPID.PNG)
 
 screenshot NMAP option
-![nmap](../00_includes/LNX-06-NMAP.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-06-NMAP.PNG)
 
 other lnx06 screenshots
-![Alt text](../00_includes/LNX-06-screenshot1.PNG)
-![Alt text](../00_includes/LNX-06-screenshot2.PNG)
-![Alt text](../00_includes/LNX-06-screenshot3.PNG)
-![Alt text](../00_includes/LNX-06-screenshot4.PNG)
-![Alt text](../00_includes/LNX-06-screenshot5.PNG)
-
-
-
+![Alt text](../00_includes/Week-1-Linux/LNX-06-screenshot1.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-06-screenshot2.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-06-screenshot3.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-06-screenshot4.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-06-screenshot5.PNG)

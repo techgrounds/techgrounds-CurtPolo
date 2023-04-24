@@ -43,15 +43,15 @@ I first checked to make sure that there was no synthax error with the cron comma
 
 I then did a status check on cron
 
-![Alt text](../00_includes/LNX-08-StatusCheck.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-08-StatusCheck.PNG)
 
 Followed by a log check
 
-![Alt text](../00_includes/LNX-08-LogCheck.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-08-LogCheck.PNG)
 
 Then it became clear that my Cron expression was wrong
 
-![Alt text](../00_includes/LNX-08-WrongNumber.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-08-WrongNumber.PNG)
 
 It was fixed by changing 1 * * * * to * * * * *, but the problems continued and it was still not posting.
 
@@ -61,31 +61,31 @@ I then checked if maybe my user had rwx rights to the directory and files. I not
 
 This was the solution to my problem. Seeing it started to work just fine after.
 
-![Alt text](../00_includes/LNX-08-ProblemSolution.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-08-ProblemSolution.PNG)
 
 
 ### Resultaat
 
 screenshot bash script date and time
 
-![Alt text](../00_includes/LNX-08-DateTimeCode.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-08-DateTimeCode.PNG)
 
-![Alt text](../00_includes/LNX-08-DateTimeProof.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-08-DateTimeProof.PNG)
 
 screenshot crontab registry and function
 
-![Alt text](../00_includes/LNX-08-CronCommand.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-08-CronCommand.PNG)
 
-![Alt text](../00_includes/LNX-08-CronProof.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-08-CronProof.PNG)
 
 screenshot working second cron command. It was set to a minute just for testing.
 
-![Alt text](../00_includes/LNX-08-CronCom2.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-08-CronCom2.PNG)
 
-![Alt text](../00_includes/LNX-08-DiskSpaceCode.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-08-DiskSpaceCode.PNG)
 
-![Alt text](../00_includes/LNX-08-DiskScriptProof.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-08-DiskScriptProof.PNG)
 
-![Alt text](../00_includes/LNX-08-WorkingCron2.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-08-WorkingCron2.PNG)
 
 

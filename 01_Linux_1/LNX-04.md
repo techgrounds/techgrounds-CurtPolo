@@ -42,7 +42,7 @@ No real issues to report here
 
 ### Resultaat
 Screenshot of successfully creating a new user and adding it to an admin group with sudo right.
-![screenshot new user](../00_includes/LNX-04-NewUser.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-04-NewUser.PNG)
 
 Screenshot of the directories I accessed to view the user information.
-![screenshot user info](../00_includes/LNX-04-UserInfo.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-04-UserInfo.PNG)

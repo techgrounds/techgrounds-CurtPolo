@@ -34,12 +34,12 @@ I did not nessesarily run into a problem. It was just a matter of finding the ri
 ### Resultaat
 Screenshot of the two OpenSSH services I had to start
 
-![Services](../00_includes/LNX-01-Services.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-01-Services.PNG)
 
 Screenshot of the successful connection via SSH
 
-![ssh connection](../00_includes/LNX-01-SSH-connect.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-01-SSH-connect.PNG)
 
 Screenshot of the Whoami task
 
-![whoami](../00_includes/LNX-01-Whoami.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-01-Whoami.PNG)

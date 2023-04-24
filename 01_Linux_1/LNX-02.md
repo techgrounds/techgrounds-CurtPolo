@@ -45,4 +45,4 @@ Had some issues creating text as regular user. So was using root. This was later
 ### Resultaat
 A screen shot of all the completed tasks
 
-![screenshot lnx02](../00_includes/LNX-02-Complete.PNG)
+![Alt text](../00_includes/Week-1-Linux/LNX-02-Complete.PNG)
