@@ -28,6 +28,32 @@ None
 ### Resultaat
 I have successfully generated a key pair.
 
-Based on what I have expirienced when it comes to the Symmetrical and Asymmetrical encryptions it clearly shows that the Symmetrical one has the possiblity to be decrypted by someone that figured out your method.
+![Alt text](../00_includes/SEC-05-KeyPair.PNG)
 
-But when it comes to Asymmetrical, there is no possible way anyone that does not have your private key can decrypt it. It also adds a level of security to the message of those sending it to you.
+In order to send a fellow student a message, I needed to take the following steps:
+
+1. Make a copy of their **public key**.
+
+![Alt text](../00_includes/SEC-05-AnjPublic.PNG)
+
+2. Go to a site or use a program that is able to encrypt and decrypt messages. Write her a message and paste her public key into the public key section of the encrypt message sector.
+
+![Alt text](../00_includes/SEC-05-MessageEncrypting.PNG)
+
+3. Click the encrypt button and copy the resulted encrypted message.
+
+![Alt text](../00_includes/SEC-05-EncryptedMessage.PNG)
+
+4. After sending the encrypted message to my classmate she would be the only one able to decrypt the message using her **private key**
+
+![Alt text](../00_includes/SEC-05-PublicKeyShare.PNG)
+
+Comparing Asymmetrical and Symmetrical methods of encryption shows the following factors:
+
+- When it comes to symmetrical encryption, anyone that figures out your encryption method or methods will be able to decrypt your messages.
+
+- When it comes to asymmetrical, even if they find out your encryption method wether it be RSA, ECC, ElGamal etc. They would not be able to decrypt the message without the private key.
+
+The flaw of the symmetrical system is that you can use the encrypted message to find out the method used and decrypt it.
+
+At the other hand when it comes to the asymmetrical system, a key factor is that there is no possible way to use the public key or the encrypted message, to derive what the private key is.
