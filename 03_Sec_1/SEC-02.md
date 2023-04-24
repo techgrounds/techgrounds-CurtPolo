@@ -49,13 +49,13 @@ I realized that maybe I am using the wrong IP address based on how the VM is set
 ### Resultaat
 A screenshot of me installing Apache2 web-server after updating the system.
 
-![Alt text](../00_includes/SEC-02-Update.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-02-Update.PNG)
 
-![Alt text](../00_includes/SEC-02-Apache2Install.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-02-Apache2Install.PNG)
 
 I then started the Apache2 web-server and checked if it was running.
 
-![Alt text](../00_includes/SEC-02-Apache2Start.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-02-Apache2Start.PNG)
 
 To view the default page, there had to be some adjustments made. As defaults the web-server is listening on port 80. 
 
@@ -65,11 +65,11 @@ This was done with the following command
 
 **sudo nano /etc/apache2/ports.conf**
 
-![Alt text](../00_includes/SEC-02-ListenPort.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-02-ListenPort.PNG)
 
 After using the correct IP address and my unique port number I was able to access the the web-server default page.
 
-![Alt text](../00_includes/SEC-02-WebPage.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-02-WebPage.PNG)
 
 As for the task of blocking web traffic but allowing SSH traffic. I proceeded to do these commands in the exact order.
 
@@ -81,15 +81,15 @@ After attempting to block all web ports and even the unique web port. I still ha
 
 I did a scan using nmap and it still shows my ports open.
 
-![Alt text](../00_includes/SEC-02-Unable1.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-02-Unable1.PNG)
 
-![Alt text](../00_includes/SEC-02-Unable2.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-02-Unable2.PNG)
 
-![Alt text](../00_includes/SEC-02-Unable3.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-02-Unable3.PNG)
 
 I then cleared my web-browser cache and I am now unable to access the web-server default page.
 
-![Alt text](../00_includes/SEC-02-CacheClear.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-02-CacheClear.PNG)
 
 I then allowed the ports again and was able to reconnect
 

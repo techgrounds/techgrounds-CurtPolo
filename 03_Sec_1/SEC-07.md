@@ -64,17 +64,17 @@ Here's how it works:
 
 **Below you will see the decrypted hash password and the result of the random generated characters**
 
-![Alt text](../00_includes/SEC-07-RainbowTable1.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-07-RainbowTable1.PNG)
 
-![Alt text](../00_includes/SEC-07-RainbowTable2.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-07-RainbowTable2.PNG)
 
 **Below you will see the newly created user and the corresponding hash password**
 
-![Alt text](../00_includes/SEC-07-UserHash.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-07-UserHash.PNG)
 
 **Below you will see proof that thanks to the hash salt, the hash could not be decrypted**
 
-![Alt text](../00_includes/SEC-07-RainbowTable3.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-07-RainbowTable3.PNG)
 
 Comparing the hash to a peer it indeed shows two different hashes, despite using the same password.
 

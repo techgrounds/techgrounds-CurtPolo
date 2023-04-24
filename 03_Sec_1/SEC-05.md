@@ -28,25 +28,25 @@ None
 ### Resultaat
 I have successfully generated a key pair.
 
-![Alt text](../00_includes/SEC-05-KeyPair.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-05-KeyPair.PNG)
 
 In order to send a fellow student a message, I needed to take the following steps:
 
 1. Make a copy of their **public key**.
 
-![Alt text](../00_includes/SEC-05-AnjPublic.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-05-AnjPublic.PNG)
 
 2. Go to a site or use a program that is able to encrypt and decrypt messages. Write her a message and paste her public key into the public key section of the encrypt message sector.
 
-![Alt text](../00_includes/SEC-05-MessageEncrypting.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-05-MessageEncrypting.PNG)
 
 3. Click the encrypt button and copy the resulted encrypted message.
 
-![Alt text](../00_includes/SEC-05-EncryptedMessage.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-05-EncryptedMessage.PNG)
 
 4. After sending the encrypted message to my classmate she would be the only one able to decrypt the message using her **private key**
 
-![Alt text](../00_includes/SEC-05-PublicKeyShare.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-05-PublicKeyShare.PNG)
 
 Comparing Asymmetrical and Symmetrical methods of encryption shows the following factors:
 

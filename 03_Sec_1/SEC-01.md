@@ -31,7 +31,7 @@ When it came to the task of scanning the network on my Linux Machine using nmap,
 
 After using the ifconfig command it displayed the broadcast address.
 
-![Alt text](../00_includes/SEC-01-IP.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-01-IP.PNG)
 
 I then searched for the command to be able to use nmap to scan the network and I found that it was.
 
@@ -39,16 +39,16 @@ I then searched for the command to be able to use nmap to scan the network and I
 
 I took one binary bit off the broadcast address to find the last host ip address. I then filled it in the command to do the scan. I then ended up seeing 13 host addresses that were up on the network.
 
-![Alt text](../00_includes/SEC-01-Hosts.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-01-Hosts.PNG)
 
 When I did the command **nmap** on my own IP address, I received information on how many ports are closed, the latency and which ports are open.
 
-![Alt text](../00_includes/SEC-01-MY-IP.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-01-MY-IP.PNG)
 
 When doing the Wireshark task. I closed zoom to make thinks easier. I then closed my web-browser.
 
 Then I started Wireshark and immediately opened the web-browser. I stopped Wireshark and searched for the first point I saw activity from my browser
 
-![Alt text](../00_includes/SEC-01-Wireshark.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-01-Wireshark.PNG)
 
 The very first one I saw was a DNS protocol, that stated "A detectedprotal.firefox.com"

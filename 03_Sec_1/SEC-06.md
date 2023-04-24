@@ -55,10 +55,10 @@ I took the following steps to create my self-signed certificate on my VM.
 ## Analyzing Techgrounds.nl Certification Path
 This information can easily be found by clicking on the lock symbol next to the website URL on your web-browser.
 
-![Alt text](../00_includes/SEC-06-CertificationPath1.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-06-CertificationPath1.PNG)
 
-![Alt text](../00_includes/SEC-06-CertificationPath2.PNG)
-![Alt text](../00_includes/SEC-06-CertificationPath3.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-06-CertificationPath2.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-06-CertificationPath3.PNG)
 
 
 
@@ -87,7 +87,7 @@ This information can easily be found by clicking on the lock symbol next to the 
 
     **sudo find / -name "ca-certificates.crt" 2>/dev/null**
 
-![Alt text](../00_includes/SEC-06-LinuxCertPath.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-06-LinuxCertPath.PNG)
 
 2. Run the following command to display the contents of the "ca-certificates.crt" file
 
@@ -95,7 +95,7 @@ This information can easily be found by clicking on the lock symbol next to the 
 
     Replace "/path/to/" with the path to the "ca-certificates.crt"
 
-    ![Alt text](../00_includes/SEC-06-LinuxCertContentEncrypted.PNG)
+    ![Alt text](../00_includes/Week-3-Security/SEC-06-LinuxCertContentEncrypted.PNG)
 
     This shows the content in encrypted form.
 
@@ -103,6 +103,6 @@ To display the certification contents in readable form, use the following comman
 
 **sudo dpkg -L ca-certificates | grep /usr/share/ca-certificates**
 
-![Alt text](../00_includes/SEC-06-LinuxCertContentReadable.PNG)
+![Alt text](../00_includes/Week-3-Security/SEC-06-LinuxCertContentReadable.PNG)
 
 

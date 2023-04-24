@@ -73,7 +73,7 @@ The following are two digital ciphers used today:
 
 The sharing of an encrypted message task went as followed.
 
-![Alt text](../00_includes/SEC-04-Caeser.jpg)
+![Alt text](../00_includes/Week-3-Security/SEC-04-Caeser.jpg)
 
 I used the above image as a pre-cipher. It indicates that you should use the caeser cipher with a shift of 5 to decrypt the following message.
 
@@ -81,7 +81,7 @@ I used the above image as a pre-cipher. It indicates that you should use the cae
 
 The following was the actual clue to decrypt my cipher.
 
-![Alt text](../00_includes/SEC-04-Lock-Key.jpg)
+![Alt text](../00_includes/Week-3-Security/SEC-04-Lock-Key.jpg)
 
 The top two images have half a lock symbol each to indicate this is the system I used to lock the message.
 
