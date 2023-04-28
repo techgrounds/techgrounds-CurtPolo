@@ -94,12 +94,104 @@ An EIP (Elastic IP address) is a static, public IP address that can be assigned 
 ### Gebruikte bronnen
 ChatGPT
 
+Udemy Course
+
 https://www.youtube.com/watch?v=Iqzgu5UEDKo
 
 ### Ervaren problemen
-I could not connect to my EC2 Instance unless I add allow SSH to my inbound protocol.
+I could not connect to my EC2 Instance unless I add allow SSH to my inbound protocol. I checked on ChatGPT if it's possible to connect to my EC2 Instance without allowing SSH and the answer is "No". 
 
-I also could not see the IPv4 Public DNS on the aws site.
+I also could not see the IPv4 Public DNS on the aws site, But I was able to find it using a command in the terminal
 
 ### Resultaat
-[Omschrijf hoe je weet dat je opdracht gelukt is (gebruik screenshots waar nodig).]
+**Exercise 1**
+
+I allocated an Elastic IP address to my account.
+![Alt text](../00_includes/Week-4-AWS/AWS-10-Allocate-ElasticIP.PNG)
+
+I created the VPC with the specified requirements.
+![Alt text](../00_includes/Week-4-AWS/AWS-10-VPC1-Created.PNG)
+
+I created the public and private subnets with the specified requirments.
+![Alt text](../00_includes/Week-4-AWS/AWS-10-PublicSubnet1.PNG)
+
+![Alt text](../00_includes/Week-4-AWS/AWS-10-PrivateSubnet1.PNG)
+
+**Exercise 2**
+
+I created the additional public and private subnets, with the specified requirments.
+![Alt text](../00_includes/Week-4-AWS/AWS-10-PublicSubnet2.PNG)
+
+![Alt text](../00_includes/Week-4-AWS/AWS-10-PrivateSubnet2.PNG)
+
+I renamed the main route table to "Private Route Table"
+![Alt text](../00_includes/Week-4-AWS/AWS-10-MainRouteTable-Renamed.PNG)
+
+![Alt text](../00_includes/Week-4-AWS/AWS-10-MainRouteTable-Renamed2.PNG)
+
+I proceeded to explicitly associate the private route table to the private subnets.
+![Alt text](../00_includes/Week-4-AWS/AWS-10-ExcplicitlyPrivateSubnet.PNG)
+
+I then proceeded to make a new route table and named it "Public Subnets Table", and explicitly associated the public subnets with it.
+![Alt text](../00_includes/Week-4-AWS/AWS-10-ExcplicitlyPublicSubnet.PNG)
+
+I then proceeded to make an Internet Gateway.
+![Alt text](../00_includes/Week-4-AWS/AWS-10-InternetGateway-Made.PNG)
+
+I then attached the Internet Gateway to my VPC.
+![Alt text](../00_includes/Week-4-AWS/AWS-10-InternetGateway-AttachVPC.PNG)
+
+And proceeded to edit the target and link it to my public route table.
+![Alt text](../00_includes/Week-4-AWS/AWS-10-InternetGateway-AddedRoutes.PNG)
+
+![Alt text](../00_includes/Week-4-AWS/AWS-10-LinkedPublicSubnetsToInternetGateway.PNG)
+
+I made a NAT-Gateway and made sure I linked it to the Public Subnet 1.
+![Alt text](../00_includes/Week-4-AWS/AWS-10-NAT-Gateway-Made.PNG)
+
+I then proceeded to edit the target and link it to my private route table.
+![Alt text](../00_includes/Week-4-AWS/AWS-10-NAT-Gateway-Targeted.PNG)
+
+![Alt text](../00_includes/Week-4-AWS/AWS-10-LinkedPrivateSubnetsToNatGateway.PNG)
+
+So now I had successfully split the private and public route tables, associated the subnets to each accordingly, linked the Internet Gateway to the Public Route Table and the NAT Gateway to the private route table. All of them are also linked the the Lab VPC.
+![Alt text](../00_includes/Week-4-AWS/AWS-10-PublicAndPrivateRouteTable-Made.PNG)
+
+**Exercise 3**
+
+I created the security group with the specified requirments.
+![Alt text](../00_includes/Week-4-AWS/AWS-10-SecurityGroupSettings.PNG)
+
+**Exercise 4**
+
+I then created an EC2 Instance with the specified requirments and launched it.
+![Alt text](../00_includes/Week-4-AWS/AWS-10-InstanceSettings1.PNG)
+
+![Alt text](../00_includes/Week-4-AWS/AWS-10-InstanceSettings2.PNG)
+
+![Alt text](../00_includes/Week-4-AWS/AWS-10-InstanceSettings3.PNG)
+
+![Alt text](../00_includes/Week-4-AWS/AWS-10-InstanceSettings4.PNG)
+
+![Alt text](../00_includes/Week-4-AWS/AWS-10-InstanceSettings5.PNG)
+
+![Alt text](../00_includes/Week-4-AWS/AWS-10-Instance-Launch.PNG)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
