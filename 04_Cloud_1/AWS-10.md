@@ -99,9 +99,15 @@ Udemy Course
 https://www.youtube.com/watch?v=Iqzgu5UEDKo
 
 ### Ervaren problemen
-I could not connect to my EC2 Instance unless I add allow SSH to my inbound protocol. I checked on ChatGPT if it's possible to connect to my EC2 Instance without allowing SSH and the answer is "No". 
+I had some issues understanding some questions, but that is because I looked too deep into them instead of keeping it simpler.
+
+I could not connect the first day. I went through all the settings to make sure everything was set in order, I even used the Reachability Analyzer to check if my connection / setup is good. 
+
+It came out successful but still would not show the web-page.
 
 I also could not see the IPv4 Public DNS on the aws site, But I was able to find it using a command in the terminal
+
+The next day I start my instance and tried again by pasting the ip-address in my browser and it ends up working.
 
 ### Resultaat
 **Exercise 1**
@@ -177,11 +183,14 @@ I then created an EC2 Instance with the specified requirments and launched it.
 
 ![Alt text](../00_includes/Week-4-AWS/AWS-10-Instance-Launch.PNG)
 
+In order to connect to my server using the public IPv4 DNS name, I tried putting the following command in my terminal. **nslookup (the public ip of my instance) because I did not see the public IPv4 DNS name in the details section of AWS.
+
+![Alt text](../00_includes/Week-4-AWS/AWS-10-Found-DNS-Name.PNG)
 
 
+After going over all the settings again and rebooting my instance to be sure. I was able to paste public IPv4 DNS name in my web-browser and it worked
 
-
-
+![Alt text](../00_includes/Week-4-AWS/AWS-10-WebserverConnect1.PNG)
 
 
 
