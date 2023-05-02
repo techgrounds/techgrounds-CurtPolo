@@ -130,14 +130,79 @@ No actual problem. Just need to take time to get used to the process
 ### Resultaat
 **Exercise 1**
 
-
+I created the EC2 Instance with the specified configurations. And created an AMI from it.
+![Alt text](../00_includes/Week-5-AWS/AWS-11-AMI-Created.PNG)
 
 **Exercise 2**
 
+I proceeded to create a application load balancer, with the specified configurations.
+![Alt text](../00_includes/Week-5-AWS/AWS-11-LoadBalancerProcess1.PNG)
 
+![Alt text](../00_includes/Week-5-AWS/AWS-11-LoadBalancerProcess2.PNG)
+
+![Alt text](../00_includes/Week-5-AWS/AWS-11-LoadBalancerName.PNG)
+
+![Alt text](../00_includes/Week-5-AWS/AWS-11-LoadBalancerAZ.PNG)
+
+![Alt text](../00_includes/Week-5-AWS/AWS-11-LoadBalancerListner.PNG)
+
+![Alt text](../00_includes/Week-5-AWS/AWS-11-LoadBalancerSG.PNG)
+
+![Alt text](../00_includes/Week-5-AWS/AWS-11-LoadBalancerTargetGroup1.PNG)
+
+![Alt text](../00_includes/Week-5-AWS/AWS-11-LoadBalancerTargetGroup2.PNG)
+
+![Alt text](../00_includes/Week-5-AWS/AWS-11-LoadBalancerTargetGroupAdded.PNG)
+
+![Alt text](../00_includes/Week-5-AWS/AWS-11-LoadBalancerTargetGroupMade.PNG)
+
+![Alt text](../00_includes/Week-5-AWS/AWS-11-LoadBalancerTargetGroupName.PNG)
+
+![Alt text](../00_includes/Week-5-AWS/AWS-11-LoadBalancerMADE.PNG)
+
+I also made sure that the subnets are public by placing them in a public route table.
+![Alt text](../00_includes/Week-5-AWS/AWS-11-PublicRouteTableSubnets.PNG)
 
 **Exercise 3**
 
+I proceeded to create a launch configuration for the Auto Scaling group.
+![Alt text](../00_includes/Week-5-AWS/AWS-11-LaunchConfiguration1.PNG)
 
+![Alt text](../00_includes/Week-5-AWS/AWS-11-LaunchConfiguration2.PNG)
+
+![Alt text](../00_includes/Week-5-AWS/AWS-11-LaunchConfiguration3.PNG)
+
+![Alt text](../00_includes/Week-5-AWS/AWS-11-LaunchConfigurationMADE.PNG)
+
+I then created the Auto Scaling Group, with the specified requirements.
+![Alt text](../00_includes/Week-5-AWS/AWS-11-AutoScalingGroup1.PNG)
+
+![Alt text](../00_includes/Week-5-AWS/AWS-11-ASG-Summary1.PNG)
+
+![Alt text](../00_includes/Week-5-AWS/AWS-11-ASG-Summary2.PNG)
+
+![Alt text](../00_includes/Week-5-AWS/AWS-11-ASG-Summary3.PNG)
+
+![Alt text](../00_includes/Week-5-AWS/AWS-11-ASG-MADE.PNG)
 
 **Exercise 4**
+
+I verified that the EC2 instances are online and that they are part of the target group for the load balancer.
+![Alt text](../00_includes/Week-5-AWS/AWS-11-InstancesOnlinePartofTG.PNG)
+
+I accessed the server via the ELB by using the DNS name of the ELB and started the Load tests.
+![Alt text](../00_includes/Week-5-AWS/AWS-11-LoadTest.PNG)
+
+![Alt text](../00_includes/Week-5-AWS/AWS-11-LoadTest2.PNG)
+
+I then observed as a new instance was made because of the load test.
+
+Below you will see that a third instance appeared in the eu-central-1b AZ.
+![Alt text](../00_includes/Week-5-AWS/AWS-11-AutoScalingProof2.PNG)
+
+
+
+
+
+
+
