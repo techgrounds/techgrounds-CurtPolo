@@ -1,5 +1,5 @@
 # Well Architected Framework
-The Well-Architected Framework (WAF) is a set of best practices for designing and operating reliable, secure, efficient, and cost-effective systems in the cloud. The framework provides a consistent approach for architects and engineers to evaluate architectures, identify potential problems, and implement solutions that align with business needs and technical requirements. The Well-Architected Framework consists of six pillars
+**The Well-Architected Framework (WAF) is a set of best practices for designing and operating reliable, secure, efficient, and cost-effective systems in the cloud.** The framework provides a consistent approach for architects and engineers to evaluate architectures, identify potential problems, and implement solutions that align with business needs and technical requirements. The Well-Architected Framework consists of six pillars
 
 The mnemonic device for the six pillars is **CROPSS**
 
