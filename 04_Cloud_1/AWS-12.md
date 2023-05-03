@@ -36,6 +36,7 @@ None
 ### Gebruikte bronnen
 ChatGPT
 
+https://www.youtube.com/watch?v=x6DIk0_2Goo&list=PLhCLKeZ_xQuFIJ9payBKnHOY7U4o3iFE_&index=16
 ### Ervaren problemen
 None
 
