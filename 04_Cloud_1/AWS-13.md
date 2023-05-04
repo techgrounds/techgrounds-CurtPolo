@@ -28,7 +28,7 @@ Amazon Elastic File System (EFS) is a fully managed file storage service offered
 
 **RDS**
 
-Amazon Relational Database Service (RDS) is a managed database service offered by AWS that provides an easy way to set up, operate, and scale a relational database in the cloud. RDS supports popular database engines like MySQL, PostgreSQL, Oracle, and SQL Server, and provides features like automated backups, automatic software patching, and high availability. With RDS, users can focus on their applications without worrying about database management tasks.
+Amazon Relational Database Service (RDS) is a managed database service offered by AWS that provides an easy way to set up, operate, and scale a relational database in the cloud. RDS supports popular database engines like MySQL, PostgreSQL, Oracle, Aurora and SQL Server, and provides features like automated backups, automatic software patching, and high availability. With RDS, users can focus on their applications without worrying about database management tasks.
 
 **Aurora**
 
@@ -71,14 +71,9 @@ Amazon Aurora is a MySQL and PostgreSQL-compatible relational database engine of
 
 **Part 2.2**
 - Find the RDS service one AWS.
-- Create an RDS database.
-- Add an RDS Read Replica
-- Intergrate your RDS database with another service.
-
-**Part 2.3**
-- Find the Aurora service one AWS.
-- Create an AWS Aurora Serverless database and access it using the AWS Management Console.
-- Intergrate your Aurora database with another service.
+- Create a RDS database (MySQL).
+- Add a RDS Read Replica
+- Connect a EC2 Instance to the database
 
 ### Gebruikte bronnen
 ChatGPT
@@ -237,7 +232,7 @@ So now when I checked on Instance 2 by doing the "ls" command. I was able to see
 
 
 
-**Part 2.3**
+
 
 
 
