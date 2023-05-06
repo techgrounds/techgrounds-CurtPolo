@@ -230,47 +230,53 @@ So now when I checked on Instance 2 by doing the "ls" command. I was able to see
 
 **Part 2.2**
 
+I found the RDS service on AWS and proceeded to make a MySQL database with the following settings:
+![Alt text](../00_includes/Week-5-AWS/aws-13-2.2-DBsettings1.PNG)
 
+![Alt text](../00_includes/Week-5-AWS/aws-13-2.2-DBsettings2.PNG)
 
+![Alt text](../00_includes/Week-5-AWS/aws-13-2.2-DBsettings3.PNG)
 
+![Alt text](../00_includes/Week-5-AWS/aws-13-2.2-DBsettings4.PNG)
 
+![Alt text](../00_includes/Week-5-AWS/aws-13-2.2-DBsettings5.PNG)
 
+I chose not to make the EC2 connection option now, just so I can perform it manually later.
 
+![Alt text](../00_includes/Week-5-AWS/aws-13-2.2-DBsettings6.PNG)
 
+I picked the SG I made earlier in order to allow SSH connections and a Aurora/MySQL connection from all instances within that security group.
 
+![Alt text](../00_includes/Week-5-AWS/aws-13-2.2-DBsettings7.PNG)
+ 
+![Alt text](../00_includes/Week-5-AWS/aws-13-2.2-DBsettings8.PNG)
 
+![Alt text](../00_includes/Week-5-AWS/aws-13-2.2-DBsettings9.PNG)
 
+![Alt text](../00_includes/Week-5-AWS/aws-13-2.2-DBmade.PNG)
 
+![Alt text](../00_includes/Week-5-AWS/aws-13-2.2-DBmadeSummary.PNG)
 
+Here is just an example of how the security group Inbound rule was setup.
+![Alt text](../00_includes/Week-5-AWS/AWS-13-2.2-EditSecurityGroup.PNG)
 
+Here is just a quick view of the process IF I hade chosen to connect to an EC2 instance right away while creating the database.
+![Alt text](../00_includes/Week-5-AWS/aws-13-2.2-EC2Instance-Connection1.PNG)
 
+![Alt text](../00_includes/Week-5-AWS/aws-13-2.2-EC2Instance-Connection2.PNG)
 
+![Alt text](../00_includes/Week-5-AWS/aws-13-2.2-EC2Instance-Connection3.PNG)
 
+![Alt text](../00_includes/Week-5-AWS/aws-13-2.2-EC2Instance-Connection4.PNG)
 
+After connecting to my EC2 Instance using Instance Connect, I started the process of updating the instance.
+![Alt text](../00_includes/Week-5-AWS/AWS-13-2.2-UpdateInstance.PNG)
 
+After the update procedure I installed MySQL on my Instance.
+![Alt text](../00_includes/Week-5-AWS/AWS-13-2.2-InstallMySQL.PNG)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+I then proceeded to use the correct command to make connection to my database via my EC2 instance.
+![Alt text](../00_includes/Week-5-AWS/aws-13-2.2-DB-InstanceConnected.PNG)
 
 
 
