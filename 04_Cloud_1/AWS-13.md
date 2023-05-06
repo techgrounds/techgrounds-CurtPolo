@@ -72,7 +72,6 @@ Amazon Aurora is a MySQL and PostgreSQL-compatible relational database engine of
 **Part 2.2**
 - Find the RDS service one AWS.
 - Create a RDS database (MySQL).
-- Add a RDS Read Replica
 - Connect a EC2 Instance to the database
 
 ### Gebruikte bronnen
