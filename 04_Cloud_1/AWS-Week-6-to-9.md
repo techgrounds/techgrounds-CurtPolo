@@ -94,7 +94,6 @@ With EventBridge, you can create event rules that match incoming events and rout
 
 
 ## Opdracht
-### Gebruikte bronnen
 **IAM Excercise**
 
 - Create a new user called Johnny.
@@ -113,6 +112,21 @@ With EventBridge, you can create event rules that match incoming events and rout
 - Show proof that the alarm is functioning properly
 
 
+**DynamoDB Excercise**
+
+- Create a DynamoDB table.
+- Add items to your table.
+- Replicate your table into another region
+
+**AWS Lambda Excercise**
+
+- Create a Lambda function that will create a thumbnail of pics you upload into a S3 bucket.
+- Create a Lambda function that writes the pics meta data to your previous DynamoDB database
+
+**IAM Excercise**
+
+
+
 **IAM Excercise**
 
 
@@ -121,17 +135,19 @@ With EventBridge, you can create event rules that match incoming events and rout
 
 
 
-**IAM Excercise**
 
+### Gebruikte bronnen
+**For the stress installation**
 
+https://www.cyberciti.biz/faq/installing-rhel-epel-repo-on-centos-redhat-7-x/
 
-**IAM Excercise**
+**For the CloudWatch agent installation**
 
+https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/install-CloudWatch-Agent-on-EC2-Instance.html
 
+ChatGPT
 
-**IAM Excercise**
-
-
+https://www.youtube.com/watch?v=OJrxbr9ebDE
 
 
 
@@ -210,5 +226,34 @@ I checked the graph and it showed it passing the bar.
 
 I also checked my e-mail and did receive the Alarm notification.
 ![Alt text](../00_includes/Week-6-To-9-AWS/aws-CloudWatch-AlarmActivated3.PNG)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
