@@ -122,17 +122,19 @@ With EventBridge, you can create event rules that match incoming events and rout
 
 - Create a Lambda function that will be triggered everytime you upload a file into a S3 bucket.
 
-**IAM Excercise**
+**SQS Excercise**
 
+- Create an SQS queue
+- Create, send and poll two messages using SQS to show how the concept works.
 
+**SNS Excercise**
 
-**IAM Excercise**
+- Create an SNS
+- Use that SNS to send a message to your SQS and email.
 
+**EventBridge Excercise**
 
-
-**IAM Excercise**
-
-
+- Create a rule in EventBridge that everytime a S3 bucket is deleted, it will send you an email.
 
 
 ### Gebruikte bronnen
@@ -244,6 +246,33 @@ In order to check if the triggered functioned properly I went to the Lambda moni
 I was then able to see that the event indeed triggered my Lambda function.
 ![Alt text](../00_includes/Week-6-To-9-AWS/Lambda-Proof2.PNG)
 
+**SQS Excercise**
+
+You search for SQS and then click on the create queue button. I named the queue "test-sqs" and kept all the settings as default
+![Alt text](../00_includes/Week-6-To-9-AWS/sqs-create.PNG)
+
+![Alt text](../00_includes/Week-6-To-9-AWS/sqs-create2.PNG)
+
+I then chose the "Send and Receive Messages" option.
+![Alt text](../00_includes/Week-6-To-9-AWS/sqs-SendAndReceive.PNG)
+
+The way SQS works is that you send a message into it and it will store it in a queue.
+![Alt text](../00_includes/Week-6-To-9-AWS/sqs-SendAndReceive2.PNG)
+
+It will then keep those messages in a queue untill they are polled, read and deleted.
+![Alt text](../00_includes/Week-6-To-9-AWS/sqs-SendAndReceive3.PNG)
+
+As soon as you click to start polling the messages it will pull them out of the queue.
+![Alt text](../00_includes/Week-6-To-9-AWS/sqs-SendAndReceive4.PNG)
+
+After that you will be able to read them and delete them, which will clear them from the queue.
+![Alt text](../00_includes/Week-6-To-9-AWS/sqs-messageRead.PNG)
+
+**SNS Excercise**
+
+
+
+**EventBridge Excercise**
 
 
 
