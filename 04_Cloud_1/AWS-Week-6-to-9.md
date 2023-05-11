@@ -120,8 +120,7 @@ With EventBridge, you can create event rules that match incoming events and rout
 
 **AWS Lambda Excercise**
 
-- Create a Lambda function that will create a thumbnail of pics you upload into a S3 bucket.
-- Create a Lambda function that writes the pics meta data to your previous DynamoDB database
+- Create a Lambda function that will be triggered everytime you upload a file into a S3 bucket.
 
 **IAM Excercise**
 
@@ -227,21 +226,23 @@ I checked the graph and it showed it passing the bar.
 I also checked my e-mail and did receive the Alarm notification.
 ![Alt text](../00_includes/Week-6-To-9-AWS/aws-CloudWatch-AlarmActivated3.PNG)
 
+**AWS Lambda Excercise**
 
+I created a Lambda function and picked the Amazon S3 object read only permissions AWS policy template.
+![Alt text](../00_includes/Week-6-To-9-AWS/Lambda-Create1.PNG)
 
+![Alt text](../00_includes/Week-6-To-9-AWS/Lambda-Create2.PNG)
 
+I then set the trigger by choosing the S3 application and making the trigger event "PUT" to indicate that it should trigger everytime I put something in my S3 bucket.
+![Alt text](../00_includes/Week-6-To-9-AWS/Lambda-Create3.PNG)
 
+![Alt text](../00_includes/Week-6-To-9-AWS/Lambda-S3trigger.PNG)
 
+In order to check if the triggered functioned properly I went to the Lambda monitor tab and chose "View CLoudWatch logs"
+![Alt text](../00_includes/Week-6-To-9-AWS/Lambda-Proof1.PNG)
 
-
-
-
-
-
-
-
-
-
+I was then able to see that the event indeed triggered my Lambda function.
+![Alt text](../00_includes/Week-6-To-9-AWS/Lambda-Proof2.PNG)
 
 
 
