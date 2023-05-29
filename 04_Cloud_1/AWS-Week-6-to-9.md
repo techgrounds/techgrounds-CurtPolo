@@ -269,6 +269,53 @@ After that you will be able to read them and delete them, which will clear them 
 ![Alt text](../00_includes/Week-6-To-9-AWS/sqs-messageRead.PNG)
 
 **SNS Excercise**
+I started by creating a topic and choosing the following options.
+
+Type: Standard
+
+Name: SNS_threeway
+
+Display name: SNS_threeway
+![Alt text](../00_includes/Week-6-To-9-AWS/SNS-CreateTopic.PNG)
+
+![Alt text](../00_includes/Week-6-To-9-AWS/SNS-CreateTopic2.PNG)
+
+After creating the topic I then proceeded to create the subscriptions to the topic.
+![Alt text](../00_includes/Week-6-To-9-AWS/SNS-CreateTopic3.PNG)
+
+I had to select the topic I want to create the subscription for and also the protocol.
+![Alt text](../00_includes/Week-6-To-9-AWS/SNS-CreateSubs.PNG)
+
+I made one for my email and added it as the endpoint.
+![Alt text](../00_includes/Week-6-To-9-AWS/SNS-CreateSubs-Email.PNG)
+
+I also made one for a SQS I made earlier.
+![Alt text](../00_includes/Week-6-To-9-AWS/SNS-CreateSubs-SQS.PNG)
+
+When it comes to the email protocol. I received an email to accept my subscription.
+![Alt text](../00_includes/Week-6-To-9-AWS/SNS-CreateSubs-Email-Confirm.PNG)
+
+![Alt text](../00_includes/Week-6-To-9-AWS/SNS-CreateSubs-Email-Confirm2.PNG)
+
+![Alt text](../00_includes/Week-6-To-9-AWS/SNS-CreateSubs-Email-Confirm3.PNG)
+
+When it came to the SQS I has to choose to subscribe to the SNS topic.
+![Alt text](../00_includes/Week-6-To-9-AWS/SNS-Subscribe-SQS.PNG)
+
+![Alt text](../00_includes/Week-6-To-9-AWS/SNS-Subscribe-SQS2.PNG)
+
+I then proceeded to create the message I wish to send to the subs.
+![Alt text](../00_includes/Week-6-To-9-AWS/SNS-Message.PNG)
+
+Here is the successfully sent message to my e-mail.
+![Alt text](../00_includes/Week-6-To-9-AWS/SNS-Email-Success.PNG)
+
+Here is the successfully sent message to my SQS
+![Alt text](../00_includes/Week-6-To-9-AWS/SNS-MessageReceived-SQS.PNG)
+
+![Alt text](../00_includes/Week-6-To-9-AWS/SNS-MessageReceived-SQS2.PNG)
+
+![Alt text](../00_includes/Week-6-To-9-AWS/SNS-MessageReceived-SQS3.PNG)
 
 
 
