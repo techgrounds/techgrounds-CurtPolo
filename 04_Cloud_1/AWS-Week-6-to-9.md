@@ -325,18 +325,19 @@ To create a rule in EventBridge to send me a notification everytime an S3 bucket
 I created the rule name, added a description of what the rule does and chose the option to "Rule with an event pattern".
 ![Alt text](../00_includes/Week-6-To-9-AWS/EventBridge-Create-Rule2.PNG)
 
-I then had to choose the Event source. I picked AWS events because I wanted an event that is triggered by an AWS service. 
+I then had to choose the Event source. I picked AWS events because I wanted an event that is triggered by an AWS service. I picked the option of Object Deleted in Sample events.
 ![Alt text](../00_includes/Week-6-To-9-AWS/EventBridge-Create-Rule3.PNG)
 
+I chose SNS to send the notification when it is triggered.
+![Alt text](../00_includes/Week-6-To-9-AWS/EventBridge-Create-Rule4.PNG)
 
+![Alt text](../00_includes/Week-6-To-9-AWS/EventBridge-Create-Rule5.PNG)
 
+I then had to update the rules to ensure that the rule will be triggered by the specific AWS service I want.
+![Alt text](../00_includes/Week-6-To-9-AWS/EventBridge-Create-UPDATEDRule.PNG)
 
+I also had to update the setting in my S3 bucket to allow EventBridge to be able to send to notification.
+![Alt text](../00_includes/Week-6-To-9-AWS/EventBridge-S3-bucket-setting.PNG)
 
-
-
-
-
-
-
-
-
+Here is the proof that the deletion of the S3 bucket indeed triggered the rule.
+![Alt text](../00_includes/Week-6-To-9-AWS/EventBridge-Email-Proof.PNG)
