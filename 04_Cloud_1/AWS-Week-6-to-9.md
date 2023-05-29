@@ -317,10 +317,16 @@ Here is the successfully sent message to my SQS
 
 ![Alt text](../00_includes/Week-6-To-9-AWS/SNS-MessageReceived-SQS3.PNG)
 
-
-
 **EventBridge Excercise**
 
+To create a rule in EventBridge to send me a notification everytime an S3 bucket is deleted, I went to EventBridge and chose "EventBridge Rule".
+![Alt text](../00_includes/Week-6-To-9-AWS/EventBridge-Create-Rule.PNG)
+
+I created the rule name, added a description of what the rule does and chose the option to "Rule with an event pattern".
+![Alt text](../00_includes/Week-6-To-9-AWS/EventBridge-Create-Rule2.PNG)
+
+I then had to choose the Event source. I picked AWS events because I wanted an event that is triggered by an AWS service. 
+![Alt text](../00_includes/Week-6-To-9-AWS/EventBridge-Create-Rule3.PNG)
 
 
 
