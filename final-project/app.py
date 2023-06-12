@@ -3,11 +3,11 @@ import os
 
 import aws_cdk as cdk
 
-from end_project.end_project_stack import EndProjectStack
+from final_project.final_project_stack import FinalProjectStack
 
 
 app = cdk.App()
-EndProjectStack(app, "EndProjectStack",
+FinalProjectStack(app, "FinalProjectStack",
     # If you don't specify 'env', this stack will be environment-agnostic.
     # Account/Region-dependent features and context lookups will not work,
     # but a single synthesized template can be deployed anywhere.
@@ -20,7 +20,7 @@ EndProjectStack(app, "EndProjectStack",
     # Uncomment the next line if you know exactly what Account and Region you
     # want to deploy the stack to. */
 
-    env=cdk.Environment(account='017967599866', region='eu-central-1'),
+    #env=cdk.Environment(account='123456789012', region='us-east-1'),
 
     # For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html
     )

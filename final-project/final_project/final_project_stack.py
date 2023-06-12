@@ -5,7 +5,7 @@ from aws_cdk import (
 )
 from constructs import Construct
 
-class EndProjectStack(Stack):
+class FinalProjectStack(Stack):
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -14,6 +14,6 @@ class EndProjectStack(Stack):
 
         # example resource
         # queue = sqs.Queue(
-        #     self, "EndProjectQueue",
+        #     self, "FinalProjectQueue",
         #     visibility_timeout=Duration.seconds(300),
         # )
