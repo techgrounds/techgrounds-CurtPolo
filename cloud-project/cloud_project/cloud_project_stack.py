@@ -32,7 +32,7 @@ class CloudProjectStack(Stack):
             max_azs=2,
             subnet_configuration=[
                 ec2.SubnetConfiguration(name="public", cidr_mask=24, subnet_type=ec2.SubnetType.PUBLIC),
-                ec2.SubnetConfiguration(name="private", cidr_mask=24, subnet_type=ec2.SubnetType.PRIVATE_ISOLATED)
+                ec2.SubnetConfiguration(name="private", cidr_mask=24, subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT)
             ],
             nat_gateways=1,
         )
