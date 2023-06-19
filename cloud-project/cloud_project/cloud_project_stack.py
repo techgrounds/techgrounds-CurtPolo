@@ -38,7 +38,7 @@ class CloudProjectStack(Stack):
             enable_dns_support=True,
             enable_dns_hostnames=True,
             nat_gateways=1,
-            )
+        )
 
         # Create the management server VPC
         vpc_manage = ec2.Vpc(self, "Cloud10VPCManage",
@@ -52,7 +52,8 @@ class CloudProjectStack(Stack):
             enable_dns_hostnames=True,
             nat_gateways=1,
         )
-# Create Transit Gateway
+
+        # Create Transit Gateway
         tgw = ec2.CfnTransitGateway(self, "Cloud10TransitGateway",
             amazon_side_asn=65000,  # Using your provided ASN
             auto_accept_shared_attachments="enable",
@@ -76,18 +77,31 @@ class CloudProjectStack(Stack):
             vpc_id=vpc_manage.vpc_id
         )
 
-        # Create route tables and associate them with VPCs
-        tgw_route_table = ec2.CfnTransitGatewayRouteTable(self, "Cloud10TransitGatewayRouteTable",
+        # Create route tables for each VPC and associate them with Transit Gateway
+        vpc_route_table1 = ec2.CfnTransitGatewayRouteTable(self, "Cloud10VPCRouteTable",
             transit_gateway_id=tgw.ref
         )
+        
+        vpc_route_table_association1 = ec2.CfnTransitGatewayRouteTableAssociation(self, "Cloud10VPCRouteTableAssociation",
+            transit_gateway_attachment_id=tgw_attachment1.ref,
+            transit_gateway_route_table_id=vpc_route_table1.ref
+        )
+        
+        vpc_route_table_propagation1 = ec2.CfnTransitGatewayRouteTablePropagation(self, "Cloud10VPCRouteTablePropagation",
+            transit_gateway_attachment_id=tgw_attachment1.ref,
+            transit_gateway_route_table_id=vpc_route_table1.ref
+        )
 
-        for i, attachment in enumerate([tgw_attachment1, tgw_attachment2]):
-            ec2.CfnTransitGatewayRouteTableAssociation(self, f"Cloud10VPCAssociation{i}",
-                transit_gateway_attachment_id=attachment.ref,
-                transit_gateway_route_table_id=tgw_route_table.ref
-            )
-
-            ec2.CfnTransitGatewayRouteTablePropagation(self, f"Cloud10VPCPropagation{i}",
-                transit_gateway_attachment_id=attachment.ref,
-                transit_gateway_route_table_id=tgw_route_table.ref
-            )
+        vpc_route_table2 = ec2.CfnTransitGatewayRouteTable(self, "Cloud10VPCManageRouteTable",
+            transit_gateway_id=tgw.ref
+        )
+        
+        vpc_route_table_association2 = ec2.CfnTransitGatewayRouteTableAssociation(self, "Cloud10VPCManageRouteTableAssociation",
+            transit_gateway_attachment_id=tgw_attachment2.ref,
+            transit_gateway_route_table_id=vpc_route_table2.ref
+        )
+        
+        vpc_route_table_propagation2 = ec2.CfnTransitGatewayRouteTablePropagation(self, "Cloud10VPCManageRouteTablePropagation",
+            transit_gateway_attachment_id=tgw_attachment2.ref,
+            transit_gateway_route_table_id=vpc_route_table2.ref
+        )
