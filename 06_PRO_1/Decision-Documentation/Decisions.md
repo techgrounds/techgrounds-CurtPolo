@@ -22,3 +22,6 @@ I made the decision to make some changes to my infrastructure diagram.
     3. Private subnet advantages: Placing the database in a private subnet within the same VPC provides an additional layer of security. The private subnet is not directly accessible from the internet, reducing the attack surface and protecting your database from unauthorized access.
 
     4. Efficient data transfer: If your web server and database are in the same VPC, data transfer between them doesn't incur data transfer costs. AWS typically charges for data transfer between different VPCs or over the internet, so keeping them in the same VPC can save costs, especially if you have significant data transfer between the web server and the database.
+
+# Week 3 - Workflow
+I was thinking about adding a stack for each service being created and then making a class for them now. But I decided that it should be considered a way to make my code more tidy. So I rather have a fully working code first then if I have time, split everything up to make it more organized
