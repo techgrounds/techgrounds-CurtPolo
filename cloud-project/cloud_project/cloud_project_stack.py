@@ -1,5 +1,7 @@
-from aws_cdk import Stack, aws_s3 as s3, aws_ec2 as ec2
+from aws_cdk import Stack, aws_s3 as s3, aws_ec2 as ec2, aws_rds as rds, aws_secretsmanager as sm
+from aws_cdk.aws_ec2 import AmazonLinuxImage, AmazonLinuxGeneration, InstanceClass, InstanceSize, InstanceType
 from constructs import Construct
+import json
 
 class CloudProjectStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
@@ -29,7 +31,6 @@ class CloudProjectStack(Stack):
 
         # Create the web server VPC
         vpc = ec2.Vpc(self, "Cloud10VPC",
-            ip_addresses=ec2.IpAddresses.cidr("10.10.10.0/24"),
             max_azs=2,
             subnet_configuration=[
                 ec2.SubnetConfiguration(name="public", cidr_mask=26, subnet_type=ec2.SubnetType.PUBLIC),
@@ -39,6 +40,49 @@ class CloudProjectStack(Stack):
             enable_dns_hostnames=True,
             nat_gateways=1,
         )
+
+        # Create a secret in AWS Secrets Manager
+        secret = sm.Secret(self, "Cloud10WSDatabaseSecret",
+            description="Password for Cloud10WSDatabase",
+            generate_secret_string=sm.SecretStringGenerator(
+                secret_string_template=json.dumps({"username": "admin"}),
+                generate_string_key='password',
+                password_length=16,
+                exclude_characters='/@"'
+            ),
+        )
+
+        # Create the EC2 instance
+        ec2_instance = ec2.Instance(self, "Cloud10Webserver",
+            instance_type=InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
+            machine_image=AmazonLinuxImage(generation=AmazonLinuxGeneration.AMAZON_LINUX_2),
+            vpc=vpc,
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+            block_devices=[
+                ec2.BlockDevice(
+                    device_name="/dev/xvda",
+                    volume=ec2.BlockDeviceVolume.ebs(20, encrypted=True)
+                )
+            ]
+        )
+
+        # Create the RDS instance
+        rds_instance = rds.DatabaseInstance(self, "Cloud10WSDatabase",
+            engine=rds.DatabaseInstanceEngine.mysql(version=rds.MysqlEngineVersion.VER_8_0),
+            instance_type=ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.SMALL),
+            vpc=vpc,
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT),
+            publicly_accessible=False,
+            multi_az=True,
+            allocated_storage=20,
+            storage_type=rds.StorageType.GP2,
+            cloudwatch_logs_exports=["audit", "error", "general"],
+            deletion_protection=False,
+            database_name='Cloud10WSDatabase',
+            credentials=rds.Credentials.from_secret(secret),
+            storage_encrypted=True
+        )
+
 
         # Create the management server VPC
         vpc_manage = ec2.Vpc(self, "Cloud10VPCManage",
