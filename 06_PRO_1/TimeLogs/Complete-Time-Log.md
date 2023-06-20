@@ -133,3 +133,27 @@ It had trouble finding the correct way to attach my VPCs to the transit gateway.
 I received some documents from one of my colleagues which allowed me to combine the information in that document with chatGPT for a good working code.
 ## Learnings
 I have not done so yet but I will have chatGPT break down the current code I have into smaller pieces and explain how the code works in each section.
+
+# Monday June 19, 2023
+
+## Daily Report
+I attempted to figure out a way to structure my route tables better, by spending most of the days following a tutorial, but seeing it made me feel like I would have to change my entire structure I decided to discontinue with it.
+## Obstacles
+It was hard to truly figure out and follow the tutorial because I felt that some sections were skipped and some information were not explained clear enough.
+## Solutions
+I decided to skip this and focus on getting back to working for that MVP instead of making things tidy for now.
+## Learnings
+I would say I learned that I should prioritize better.
+
+# Tuesday June 20, 2023
+
+## Daily Report
+I successfully managed to deploy my infrastructure, which currently consists of two VPCs, two AZs, four subnets, a ec2 linux web server, a MySQL RDS database, a transit gateway, two NAT gateways, a S3 bucket and a secret in the secrets manager.
+## Obstacles
+I received several errors in regards to both the way i coded my web-server and my database.
+
+most of them had to do with how I pull the credentials out of secrets mananger and following the password guidelines.
+## Solutions
+I used chatGPT to troubleshoot each individual error code until I found the codes that were able to snyth and deploy without error.
+## Learnings
+I did learn that I can use a code to randomly generate a strong password and add the requirments the password needs to adhere by
