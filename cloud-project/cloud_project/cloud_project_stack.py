@@ -1,5 +1,5 @@
 from aws_cdk import Stack, aws_s3 as s3, aws_ec2 as ec2, aws_rds as rds, aws_secretsmanager as sm
-from aws_cdk.aws_ec2 import AmazonLinuxImage, AmazonLinuxGeneration, InstanceClass, InstanceSize, InstanceType
+from aws_cdk.aws_ec2 import AmazonLinuxImage, AmazonLinuxGeneration, InstanceClass, InstanceSize, InstanceType, UserData
 from constructs import Construct
 import json
 
@@ -53,7 +53,14 @@ class CloudProjectStack(Stack):
             ),
         )
 
-        # Create the EC2 instance
+        # Read the user data script file
+        with open('user-data.sh', 'r') as file:
+            user_data_script = file.read()
+
+        # Create custom UserData from the script
+        my_user_data = ec2.UserData.custom(user_data_script)
+
+        # Create the EC2 web server instance
         ec2_instance = ec2.Instance(self, "Cloud10Webserver",
             instance_type=InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
             machine_image=AmazonLinuxImage(generation=AmazonLinuxGeneration.AMAZON_LINUX_2),
@@ -64,7 +71,8 @@ class CloudProjectStack(Stack):
                     device_name="/dev/xvda",
                     volume=ec2.BlockDeviceVolume.ebs(20, encrypted=True)
                 )
-            ]
+            ],
+            user_data=my_user_data,
         )
 
         # Create the RDS instance
@@ -96,6 +104,21 @@ class CloudProjectStack(Stack):
             enable_dns_support=True,
             enable_dns_hostnames=True,
             nat_gateways=1,
+        )
+
+        # Create the management server EC2 instance
+        management_ec2_instance = ec2.Instance(self, "Cloud10ManagementServer",
+            instance_type=InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
+            machine_image=AmazonLinuxImage(generation=AmazonLinuxGeneration.AMAZON_LINUX_2),
+            vpc=vpc_manage,
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT),
+            block_devices=[
+                ec2.BlockDevice(
+                    device_name="/dev/xvda",
+                    volume=ec2.BlockDeviceVolume.ebs(20, encrypted=True)
+                )
+            ],
+            user_data=my_user_data
         )
 
         # Create Transit Gateway
