@@ -124,6 +124,9 @@ class CloudProjectStack(Stack):
             )
         )
 
+        # Add a dependency to make sure the backup vault is created before the backup plan
+        backup_plan.node.add_dependency(backup_vault)
+        
                 # Assign backup plan to resource
         backup_selection = backup.CfnBackupSelection(
             self, "WebServerBackupSelection",
