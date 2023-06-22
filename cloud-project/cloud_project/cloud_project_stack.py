@@ -1,5 +1,6 @@
 from aws_cdk import Stack, aws_s3 as s3, aws_ec2 as ec2, aws_rds as rds, aws_secretsmanager as sm, aws_backup as backup
-from aws_cdk.aws_ec2 import AmazonLinuxImage, AmazonLinuxGeneration, InstanceClass, InstanceSize, InstanceType, UserData, SizeGiB
+import aws_cdk
+from aws_cdk.aws_ec2 import AmazonLinuxImage, AmazonLinuxGeneration, InstanceClass, InstanceSize, InstanceType, UserData
 from constructs import Construct
 import json
 
@@ -91,42 +92,6 @@ class CloudProjectStack(Stack):
             security_group=web_server_sg
         )
 
-        # Create an EBS volume for the web server EC2 instance backup
-        ebs_volume = ec2.Volume(self, "WebServerVolume",
-            size=SizeGiB(20), # Use SizeGib() to create a Size object
-            encrypted=True,
-            availability_zone=ec2_instance.instance_id,
-        )
-
-        # Attach the EBS volume to the web server EC2 instance
-        ec2_instance.add_volume(ec2.CfnVolumeAttachment(
-            device_name="/dev/xvdf",
-            volume_id=ebs_volume.volume_id,
-        ))
-        
-        # Create the web server EBS backup plan
-        backup_plan = backup.BackupPlan(self, "WebServerBackupPlan",
-            backup_plan_name="WebServerBackupPlan",
-            backup_vault=backup.BackupVault(self, "WebServerNackupVault", backup_vault_name="WebServerBackupVault"),
-            schedule=backup.BackupSchedule.cron(hour="0", minute="0", week_day="*", month="*", year="*"),
-            retention=backup.RetentionProps(
-                num_weeks=1,
-            ),
-        )
-
-        # Modify the backup plan to back up every 24 hours and retain these backups for 7 days
-        backup_plan.add_selection("Cloud10WebServerSelection",
-            resources=[
-                backup.BackupResource.from_ec2_instance(ec2_instance)
-            ],
-            backup_plan_rules=[
-                backup.BackupPlanRule.daily_every_x_days(1),
-            ],
-            backup_plan_name="Cloud10WebServerBackupPlan",
-            retention=backup.RetentionProps(
-            num_days=7,
-            ),
-        )
 
         # Create the RDS instance
         rds_instance = rds.DatabaseInstance(self, "Cloud10WSDatabase",
