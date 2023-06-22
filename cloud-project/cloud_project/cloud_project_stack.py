@@ -1,4 +1,4 @@
-from aws_cdk import Stack, aws_s3 as s3, aws_ec2 as ec2, aws_rds as rds, aws_secretsmanager as sm, aws_backup as backup
+from aws_cdk import Stack, aws_s3 as s3, aws_ec2 as ec2, aws_rds as rds, aws_secretsmanager as sm, aws_backup as backup, aws_iam as iam
 import aws_cdk
 from aws_cdk.aws_ec2 import AmazonLinuxImage, AmazonLinuxGeneration, InstanceClass, InstanceSize, InstanceType, UserData
 from constructs import Construct
@@ -92,23 +92,59 @@ class CloudProjectStack(Stack):
             security_group=web_server_sg
         )
 
-
-        # Create the RDS instance
-        rds_instance = rds.DatabaseInstance(self, "Cloud10WSDatabase",
-            engine=rds.DatabaseInstanceEngine.mysql(version=rds.MysqlEngineVersion.VER_8_0),
-            instance_type=ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.SMALL),
-            vpc=vpc,
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT),
-            publicly_accessible=False,
-            multi_az=True,
-            allocated_storage=20,
-            storage_type=rds.StorageType.GP2,
-            cloudwatch_logs_exports=["audit", "error", "general"],
-            deletion_protection=False,
-            database_name='Cloud10WSDatabase',
-            credentials=rds.Credentials.from_secret(secret),
-            storage_encrypted=True
+        # Create AWS Backup Vault for the web server
+        backup_vault = backup.CfnBackupVault(
+            self, "WebServerBackupVault",
+            backup_vault_name="WebServerBackupVault"
         )
+
+        # Backup plan rules
+        backup_plan_rules = [{
+            "ruleName": "DailyBackup",
+            "targetBackupVault": backup_vault.backup_vault_name,
+            "scheduleExpression": "cron(0 0 * * ? *)",
+            "startWindowMinutes": 60,
+            "completionWindowMinutes": 180,
+            "lifecycle": {
+                "deleteAfterDays": 7
+            }
+        }]
+
+        # Create Backup plan
+        backup_plan = backup.CfnBackupPlan(
+            self, "WebServerBackupPlan",
+            backup_plan=backup.CfnBackupPlan.BackupPlanResourceTypeProperty(
+                backup_plan_name="WebServerBackupPlan",
+                backup_plan_rule=backup_plan_rules
+            )
+        )
+
+        # Assign backup plan to resource
+        backup_selection = backup.CfnBackupSelection(
+            self, "WebServerBackupSelection",
+            backup_plan_id=backup_plan.ref,
+            backup_selection=backup.CfnBackupSelection.BackupSelectionResourceTypeProperty(
+                iam_role_arn="arn:aws:iam::017967599866:role/aws-service-role/backup.amazonaws.com/AWSServiceRoleForBackup",  # replace "account-id" with your actual AWS account ID
+                selection_name="WebServerSelection",
+                resources_to_backup=[ec2_instance.instance_arn]
+            )
+        )
+        # Create the RDS instance
+        # rds_instance = rds.DatabaseInstance(self, "Cloud10WSDatabase",
+        #     engine=rds.DatabaseInstanceEngine.mysql(version=rds.MysqlEngineVersion.VER_8_0),
+        #     instance_type=ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.SMALL),
+        #     vpc=vpc,
+        #     vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT),
+        #     publicly_accessible=False,
+        #     multi_az=True,
+        #     allocated_storage=20,
+        #     storage_type=rds.StorageType.GP2,
+        #     cloudwatch_logs_exports=["audit", "error", "general"],
+        #     deletion_protection=False,
+        #     database_name='Cloud10WSDatabase',
+        #     credentials=rds.Credentials.from_secret(secret),
+        #     storage_encrypted=True
+        # )
 
 
         # Create the management server VPC
