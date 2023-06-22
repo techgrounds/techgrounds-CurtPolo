@@ -92,6 +92,11 @@ class CloudProjectStack(Stack):
             security_group=web_server_sg
         )
 
+        # Get the account ID and region for the ARN
+        account_id = aws_cdk.Stack.of(self).account
+        region = aws_cdk.Stack.of(self).region
+        instance_arn = f"arn:aws:ec2:{region}:{account_id}:instance/{ec2_instance.instance_id}"
+
         # Create AWS Backup Vault for the web server
         backup_vault = backup.CfnBackupVault(
             self, "WebServerBackupVault",
@@ -119,16 +124,17 @@ class CloudProjectStack(Stack):
             )
         )
 
-        # Assign backup plan to resource
+                # Assign backup plan to resource
         backup_selection = backup.CfnBackupSelection(
             self, "WebServerBackupSelection",
             backup_plan_id=backup_plan.ref,
             backup_selection=backup.CfnBackupSelection.BackupSelectionResourceTypeProperty(
                 iam_role_arn="arn:aws:iam::017967599866:role/aws-service-role/backup.amazonaws.com/AWSServiceRoleForBackup",  # replace "account-id" with your actual AWS account ID
                 selection_name="WebServerSelection",
-                resources_to_backup=[ec2_instance.instance_arn]
+                resources=[instance_arn]
             )
         )
+
         # Create the RDS instance
         # rds_instance = rds.DatabaseInstance(self, "Cloud10WSDatabase",
         #     engine=rds.DatabaseInstanceEngine.mysql(version=rds.MysqlEngineVersion.VER_8_0),
