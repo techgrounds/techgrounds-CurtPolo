@@ -1,4 +1,4 @@
-from aws_cdk import Stack, aws_s3 as s3, aws_ec2 as ec2, aws_rds as rds, aws_secretsmanager as sm
+from aws_cdk import Stack, aws_s3 as s3, aws_ec2 as ec2, aws_rds as rds, aws_secretsmanager as sm, aws_backup as backup
 from aws_cdk.aws_ec2 import AmazonLinuxImage, AmazonLinuxGeneration, InstanceClass, InstanceSize, InstanceType, UserData
 from constructs import Construct
 import json
@@ -60,6 +60,21 @@ class CloudProjectStack(Stack):
         # Create custom UserData from the script
         my_user_data = ec2.UserData.custom(user_data_script)
 
+        # Create web server security group
+        web_server_sg = ec2.SecurityGroup(
+            self, "WebServerSG",
+            vpc=vpc,
+            allow_all_outbound=True,
+            security_group_name="WebServerSG"
+        )
+
+        # Allow inbound HTTP traffic
+        web_server_sg.add_ingress_rule(
+            ec2.Peer.any_ipv4(),
+            ec2.Port.tcp(80),
+            "Allow inbound HTTP traffic"
+        )
+
         # Create the EC2 web server instance
         ec2_instance = ec2.Instance(self, "Cloud10Webserver",
             instance_type=InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
@@ -73,6 +88,7 @@ class CloudProjectStack(Stack):
                 )
             ],
             user_data=my_user_data,
+            security_group=web_server_sg
         )
 
         # Create the RDS instance
