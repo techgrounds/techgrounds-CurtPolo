@@ -1,4 +1,4 @@
-from aws_cdk import Stack, aws_s3 as s3, aws_ec2 as ec2, aws_rds as rds, aws_secretsmanager as sm, aws_backup as backup, aws_iam as iam
+from aws_cdk import Stack, aws_s3 as s3, aws_ec2 as ec2, aws_rds as rds, aws_secretsmanager as sm, aws_backup as backup, aws_iam as iam, aws_elasticloadbalancingv2 as elbv2, aws_autoscaling as autoscaling
 import aws_cdk
 from aws_cdk.aws_ec2 import AmazonLinuxImage, AmazonLinuxGeneration, InstanceClass, InstanceSize, InstanceType, UserData
 from constructs import Construct
@@ -76,6 +76,59 @@ class CloudProjectStack(Stack):
             "Allow inbound HTTP traffic"
         )
 
+        # Create an Auto Scaling group
+        asg = autoscaling.AutoScalingGroup(
+        self,
+        "Cloud10WebserverASG",
+        vpc=vpc,
+        instance_type=InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
+        machine_image=AmazonLinuxImage(generation=AmazonLinuxGeneration.AMAZON_LINUX_2),
+        user_data=my_user_data,
+        security_group=web_server_sg,
+        desired_capacity=1,  # adjust to your needs
+        min_capacity=1,  # adjust to your needs
+        max_capacity=5,  # adjust to your needs
+        vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+            block_devices=[
+                autoscaling.BlockDevice(
+                    device_name="/dev/xvda",
+                    volume=autoscaling.BlockDeviceVolume.ebs(20, encrypted=True)
+                )
+            ],
+        )
+
+        
+        # Create a load balancer
+        lb = elbv2.ApplicationLoadBalancer(
+            self,
+            "MyLoadBalancer",
+            vpc=vpc,
+            internet_facing=True
+        )
+
+        # Create a target group
+        target_group = elbv2.ApplicationTargetGroup(
+            self,
+            "MyTargetGroup",
+            vpc=vpc,
+            port=80,
+            targets=[asg]
+        )
+
+        # Add the target group to the load balancer
+        listener = lb.add_listener(
+            "MyListener",
+            port=80,
+            default_action=elbv2.ListenerAction.forward([target_group])
+        )
+
+        # Output the load balancer DNS name
+        aws_cdk.CfnOutput(
+            self,
+            "LoadBalancerDNS",
+            value=lb.load_balancer_dns_name
+        )
+
         # Create the EC2 web server instance
         ec2_instance = ec2.Instance(self, "Cloud10Webserver",
             instance_type=InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
@@ -126,7 +179,7 @@ class CloudProjectStack(Stack):
 
         # Add a dependency to make sure the backup vault is created before the backup plan
         backup_plan.node.add_dependency(backup_vault)
-        
+
                 # Assign backup plan to resource
         backup_selection = backup.CfnBackupSelection(
             self, "WebServerBackupSelection",
