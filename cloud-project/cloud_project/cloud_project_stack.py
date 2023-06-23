@@ -222,6 +222,21 @@ class CloudProjectStack(Stack):
             nat_gateways=1,
         )
 
+        # Create management server security group
+        management_server_sg = ec2.SecurityGroup(
+            self, "ManagementServerSG",
+            vpc=vpc_manage,
+            allow_all_outbound=True,  # Allows all outbound traffic
+            security_group_name="ManagementServerSG"
+        )
+
+        # Allow SSH access from the management server to the web server
+        web_server_sg.add_ingress_rule(
+            peer=management_server_sg,
+            connection=ec2.Port.tcp(22),
+            description='Allow SSH access from the management server'
+        )
+        
         # Create the management server EC2 instance
         management_ec2_instance = ec2.Instance(self, "Cloud10ManagementServer",
             instance_type=InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
@@ -234,7 +249,8 @@ class CloudProjectStack(Stack):
                     volume=ec2.BlockDeviceVolume.ebs(20, encrypted=True)
                 )
             ],
-            user_data=my_user_data
+            user_data=my_user_data,
+            security_group=management_server_sg
         )
 
         # Create Transit Gateway
