@@ -236,7 +236,7 @@ class CloudProjectStack(Stack):
             connection=ec2.Port.tcp(22),
             description='Allow SSH access from the management server'
         )
-        
+
         # Create the management server EC2 instance
         management_ec2_instance = ec2.Instance(self, "Cloud10ManagementServer",
             instance_type=InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
@@ -255,7 +255,7 @@ class CloudProjectStack(Stack):
 
         # Create Transit Gateway
         tgw = ec2.CfnTransitGateway(self, "Cloud10TransitGateway",
-            amazon_side_asn=65000,  # Using your provided ASN
+            amazon_side_asn=64512,  # Using your provided ASN
             auto_accept_shared_attachments="enable",
             default_route_table_association="enable",
             default_route_table_propagation="enable",
@@ -264,44 +264,43 @@ class CloudProjectStack(Stack):
             vpn_ecmp_support="enable",
         )
 
-        # Attach both VPCs to Transit Gateway
-        tgw_attachment1 = ec2.CfnTransitGatewayAttachment(self, "Cloud10VPCAttachment",
-            subnet_ids=[vpc.public_subnets[0].subnet_id],
+        # Attach VPCs to the Transit Gateway
+        tgw_attachment_vpc = ec2.CfnTransitGatewayAttachment(self, "TgwAttachmentWebVPC",
             transit_gateway_id=tgw.ref,
-            vpc_id=vpc.vpc_id
+            vpc_id=vpc.vpc_id,
+            subnet_ids=[subnet.subnet_id for subnet in vpc.private_subnets]
         )
 
-        tgw_attachment2 = ec2.CfnTransitGatewayAttachment(self, "Cloud10VPCManageAttachment",
-            subnet_ids=[vpc_manage.public_subnets[0].subnet_id],
+        tgw_attachment_vpc_manage = ec2.CfnTransitGatewayAttachment(self, "TgwAttachmentManageVPC",
             transit_gateway_id=tgw.ref,
-            vpc_id=vpc_manage.vpc_id
+            vpc_id=vpc_manage.vpc_id,
+            subnet_ids=[subnet.subnet_id for subnet in vpc_manage.private_subnets]
         )
 
-        # Create route tables for each VPC and associate them with Transit Gateway
-        vpc_route_table1 = ec2.CfnTransitGatewayRouteTable(self, "Cloud10VPCRouteTable",
+        # Create Route Tables and associate with the Transit Gateway Attachments
+        route_table = ec2.CfnTransitGatewayRouteTable(self, "RouteTable",
             transit_gateway_id=tgw.ref
         )
-        
-        vpc_route_table_association1 = ec2.CfnTransitGatewayRouteTableAssociation(self, "Cloud10VPCRouteTableAssociation",
-            transit_gateway_attachment_id=tgw_attachment1.ref,
-            transit_gateway_route_table_id=vpc_route_table1.ref
-        )
-        
-        vpc_route_table_propagation1 = ec2.CfnTransitGatewayRouteTablePropagation(self, "Cloud10VPCRouteTablePropagation",
-            transit_gateway_attachment_id=tgw_attachment1.ref,
-            transit_gateway_route_table_id=vpc_route_table1.ref
+
+        ec2.CfnTransitGatewayRouteTableAssociation(self, "RouteTableAssociationWebVPC",
+            transit_gateway_route_table_id=route_table.ref,
+            transit_gateway_attachment_id=tgw_attachment_vpc.ref
         )
 
-        vpc_route_table2 = ec2.CfnTransitGatewayRouteTable(self, "Cloud10VPCManageRouteTable",
-            transit_gateway_id=tgw.ref
+        ec2.CfnTransitGatewayRouteTableAssociation(self, "RouteTableAssociationManageVPC",
+            transit_gateway_route_table_id=route_table.ref,
+            transit_gateway_attachment_id=tgw_attachment_vpc_manage.ref
         )
-        
-        vpc_route_table_association2 = ec2.CfnTransitGatewayRouteTableAssociation(self, "Cloud10VPCManageRouteTableAssociation",
-            transit_gateway_attachment_id=tgw_attachment2.ref,
-            transit_gateway_route_table_id=vpc_route_table2.ref
+
+        # Add routes to the Route Table for each VPC
+        ec2.CfnTransitGatewayRoute(self, "RouteToManageVPC",
+            destination_cidr_block="10.20.20.0/24",
+            transit_gateway_route_table_id=route_table.ref,
+            transit_gateway_attachment_id=tgw_attachment_vpc.ref
         )
-        
-        vpc_route_table_propagation2 = ec2.CfnTransitGatewayRouteTablePropagation(self, "Cloud10VPCManageRouteTablePropagation",
-            transit_gateway_attachment_id=tgw_attachment2.ref,
-            transit_gateway_route_table_id=vpc_route_table2.ref
+
+        ec2.CfnTransitGatewayRoute(self, "RouteToWebVPC",
+            destination_cidr_block="10.10.10.0/24",
+            transit_gateway_route_table_id=route_table.ref,
+            transit_gateway_attachment_id=tgw_attachment_vpc_manage.ref
         )
