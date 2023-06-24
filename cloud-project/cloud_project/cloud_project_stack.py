@@ -268,13 +268,13 @@ class CloudProjectStack(Stack):
         tgw_attachment_vpc = ec2.CfnTransitGatewayAttachment(self, "TgwAttachmentWebVPC",
             transit_gateway_id=tgw.ref,
             vpc_id=vpc.vpc_id,
-            subnet_ids=[subnet.subnet_id for subnet in vpc.private_subnets]
+            subnet_ids=[subnet.subnet_id for subnet in vpc.public_subnets]
         )
 
         tgw_attachment_vpc_manage = ec2.CfnTransitGatewayAttachment(self, "TgwAttachmentManageVPC",
             transit_gateway_id=tgw.ref,
             vpc_id=vpc_manage.vpc_id,
-            subnet_ids=[subnet.subnet_id for subnet in vpc_manage.private_subnets]
+            subnet_ids=[subnet.subnet_id for subnet in vpc_manage.public_subnets]
         )
 
         # Create Route Tables and associate with the Transit Gateway Attachments
