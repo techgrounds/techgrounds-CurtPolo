@@ -32,6 +32,7 @@ class CloudProjectStack(Stack):
 
         # Create the web server VPC
         vpc = ec2.Vpc(self, "Cloud10VPC",
+        vpc_web = ec2.Vpc(self, "Cloud10VPC",
             ip_addresses=ec2.IpAddresses.cidr("10.10.10.0/24"),
             max_azs=2,
             subnet_configuration=[
@@ -64,7 +65,7 @@ class CloudProjectStack(Stack):
         # Create web server security group
         web_server_sg = ec2.SecurityGroup(
             self, "WebServerSG",
-            vpc=vpc,
+            vpc=vpc_web,
             allow_all_outbound=True,
             security_group_name="WebServerSG"
         )
@@ -80,7 +81,7 @@ class CloudProjectStack(Stack):
         asg = autoscaling.AutoScalingGroup(
         self,
         "Cloud10WebserverASG",
-        vpc=vpc,
+        vpc=vpc_web,
         instance_type=InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
         machine_image=AmazonLinuxImage(generation=AmazonLinuxGeneration.AMAZON_LINUX_2),
         user_data=my_user_data,
@@ -97,12 +98,11 @@ class CloudProjectStack(Stack):
             ],
         )
 
-        
         # Create a load balancer
         lb = elbv2.ApplicationLoadBalancer(
             self,
             "MyLoadBalancer",
-            vpc=vpc,
+            vpc=vpc_web,
             internet_facing=True
         )
 
@@ -110,7 +110,7 @@ class CloudProjectStack(Stack):
         target_group = elbv2.ApplicationTargetGroup(
             self,
             "MyTargetGroup",
-            vpc=vpc,
+            vpc=vpc_web,
             port=80,
             targets=[asg]
         )
@@ -133,7 +133,7 @@ class CloudProjectStack(Stack):
         ec2_instance = ec2.Instance(self, "Cloud10Webserver",
             instance_type=InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
             machine_image=AmazonLinuxImage(generation=AmazonLinuxGeneration.AMAZON_LINUX_2),
-            vpc=vpc,
+            vpc=vpc_web,
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
             block_devices=[
                 ec2.BlockDevice(
@@ -149,7 +149,7 @@ class CloudProjectStack(Stack):
         account_id = aws_cdk.Stack.of(self).account
         region = aws_cdk.Stack.of(self).region
         instance_arn = f"arn:aws:ec2:{region}:{account_id}:instance/{ec2_instance.instance_id}"
-
+ 
         # Create AWS Backup Vault for the web server
         backup_vault = backup.CfnBackupVault(
             self, "WebServerBackupVault",
@@ -267,8 +267,8 @@ class CloudProjectStack(Stack):
         # Attach VPCs to the Transit Gateway
         tgw_attachment_vpc = ec2.CfnTransitGatewayAttachment(self, "TgwAttachmentWebVPC",
             transit_gateway_id=tgw.ref,
-            vpc_id=vpc.vpc_id,
-            subnet_ids=[subnet.subnet_id for subnet in vpc.public_subnets]
+            vpc_id=vpc_web.vpc_id,
+            subnet_ids=[subnet.subnet_id for subnet in vpc_web.public_subnets]
         )
 
         tgw_attachment_vpc_manage = ec2.CfnTransitGatewayAttachment(self, "TgwAttachmentManageVPC",
@@ -278,29 +278,53 @@ class CloudProjectStack(Stack):
         )
 
         # Create Route Tables and associate with the Transit Gateway Attachments
-        route_table = ec2.CfnTransitGatewayRouteTable(self, "RouteTable",
-            transit_gateway_id=tgw.ref
+        # route_table = ec2.CfnTransitGatewayRouteTable(self, "RouteTable",
+        #     transit_gateway_id=tgw.ref
+        # )
+
+        # ec2.CfnTransitGatewayRouteTableAssociation(self, "RouteTableAssociationWebVPC",
+        #     transit_gateway_route_table_id=route_table.ref,
+        #     transit_gateway_attachment_id=tgw_attachment_vpc.ref
+        # )
+
+        # ec2.CfnTransitGatewayRouteTableAssociation(self, "RouteTableAssociationManageVPC",
+        #     transit_gateway_route_table_id=route_table.ref,
+        #     transit_gateway_attachment_id=tgw_attachment_vpc_manage.ref
+        # )
+
+        # # Add routes to the Route Table for each VPC
+        # ec2.CfnTransitGatewayRoute(self, "RouteToManageVPC",
+        #     destination_cidr_block="10.20.20.0/24",
+        #     transit_gateway_route_table_id=route_table.ref,
+        #     transit_gateway_attachment_id=tgw_attachment_vpc.ref
+        # )
+
+        # ec2.CfnTransitGatewayRoute(self, "RouteToWebVPC",
+        #     destination_cidr_block="10.10.10.0/24",
+        #     transit_gateway_route_table_id=route_table.ref,
+        #     transit_gateway_attachment_id=tgw_attachment_vpc_manage.ref
+        # )
+
+        # Create route table for web server VPC
+        rt_vpc_web = ec2.CfnRouteTable(self, "RT-VPC_Web",
+            vpc_id=vpc_web.vpc_id,
         )
 
-        ec2.CfnTransitGatewayRouteTableAssociation(self, "RouteTableAssociationWebVPC",
-            transit_gateway_route_table_id=route_table.ref,
-            transit_gateway_attachment_id=tgw_attachment_vpc.ref
-        )
-
-        ec2.CfnTransitGatewayRouteTableAssociation(self, "RouteTableAssociationManageVPC",
-            transit_gateway_route_table_id=route_table.ref,
-            transit_gateway_attachment_id=tgw_attachment_vpc_manage.ref
-        )
-
-        # Add routes to the Route Table for each VPC
-        ec2.CfnTransitGatewayRoute(self, "RouteToManageVPC",
+        # Create route in route table for web server VPC
+        ec2.CfnRoute(self, "Route-VPC_Web-to-VPC_Manage",
+            route_table_id=rt_vpc_web.attr_route_table_id,
             destination_cidr_block="10.20.20.0/24",
-            transit_gateway_route_table_id=route_table.ref,
-            transit_gateway_attachment_id=tgw_attachment_vpc.ref
+            transit_gateway_id=tgw.ref,
         )
 
-        ec2.CfnTransitGatewayRoute(self, "RouteToWebVPC",
+        # Create route table for management server VPC
+        rt_vpc_manage = ec2.CfnRouteTable(self, "RT-VPC_Manage",
+            vpc_id=vpc_manage.vpc_id,
+        )
+
+        #Create route in route table for management VPC
+        ec2.CfnRoute(self, "Route-VPC_Manage-to-VPC_Web",
+            route_table_id=rt_vpc_manage.attr_route_table_id,
             destination_cidr_block="10.10.10.0/24",
-            transit_gateway_route_table_id=route_table.ref,
-            transit_gateway_attachment_id=tgw_attachment_vpc_manage.ref
+            transit_gateway_id=tgw.ref,
         )
