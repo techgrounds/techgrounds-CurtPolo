@@ -31,7 +31,6 @@ class CloudProjectStack(Stack):
             print("S3 bucket already exists. Skipping bucket creation.")
 
         # Create the web server VPC
-        vpc = ec2.Vpc(self, "Cloud10VPC",
         vpc_web = ec2.Vpc(self, "Cloud10VPC",
             ip_addresses=ec2.IpAddresses.cidr("10.10.10.0/24"),
             max_azs=2,
