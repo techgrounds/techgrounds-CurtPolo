@@ -269,61 +269,40 @@ class CloudProjectStack(Stack):
             vpc_id=vpc_web.vpc_id,
             subnet_ids=[subnet.subnet_id for subnet in vpc_web.public_subnets]
         )
+        tgw_attachment_vpc.add_depends_on(tgw)  # Add this
 
         tgw_attachment_vpc_manage = ec2.CfnTransitGatewayAttachment(self, "TgwAttachmentManageVPC",
             transit_gateway_id=tgw.ref,
             vpc_id=vpc_manage.vpc_id,
             subnet_ids=[subnet.subnet_id for subnet in vpc_manage.public_subnets]
         )
+        tgw_attachment_vpc_manage.add_depends_on(tgw)  # Add this
 
         # Create Route Tables and associate with the Transit Gateway Attachments
-        # route_table = ec2.CfnTransitGatewayRouteTable(self, "RouteTable",
-        #     transit_gateway_id=tgw.ref
-        # )
-
-        # ec2.CfnTransitGatewayRouteTableAssociation(self, "RouteTableAssociationWebVPC",
-        #     transit_gateway_route_table_id=route_table.ref,
-        #     transit_gateway_attachment_id=tgw_attachment_vpc.ref
-        # )
-
-        # ec2.CfnTransitGatewayRouteTableAssociation(self, "RouteTableAssociationManageVPC",
-        #     transit_gateway_route_table_id=route_table.ref,
-        #     transit_gateway_attachment_id=tgw_attachment_vpc_manage.ref
-        # )
-
-        # # Add routes to the Route Table for each VPC
-        # ec2.CfnTransitGatewayRoute(self, "RouteToManageVPC",
-        #     destination_cidr_block="10.20.20.0/24",
-        #     transit_gateway_route_table_id=route_table.ref,
-        #     transit_gateway_attachment_id=tgw_attachment_vpc.ref
-        # )
-
-        # ec2.CfnTransitGatewayRoute(self, "RouteToWebVPC",
-        #     destination_cidr_block="10.10.10.0/24",
-        #     transit_gateway_route_table_id=route_table.ref,
-        #     transit_gateway_attachment_id=tgw_attachment_vpc_manage.ref
-        # )
-
-        # Create route table for web server VPC
-        rt_vpc_web = ec2.CfnRouteTable(self, "RT-VPC_Web",
-            vpc_id=vpc_web.vpc_id,
+        route_table = ec2.CfnTransitGatewayRouteTable(self, "RouteTable",
+            transit_gateway_id=tgw.ref
         )
+        route_table.add_depends_on(tgw)  # Add this
 
-        # Create route in route table for web server VPC
-        ec2.CfnRoute(self, "Route-VPC_Web-to-VPC_Manage",
-            route_table_id=rt_vpc_web.attr_route_table_id,
+        ec2.CfnTransitGatewayRouteTableAssociation(self, "RouteTableAssociationWebVPC",
+            transit_gateway_route_table_id=route_table.ref,
+            transit_gateway_attachment_id=tgw_attachment_vpc.ref
+        ).add_depends_on(route_table)  # Add this
+
+        ec2.CfnTransitGatewayRouteTableAssociation(self, "RouteTableAssociationManageVPC",
+            transit_gateway_route_table_id=route_table.ref,
+            transit_gateway_attachment_id=tgw_attachment_vpc_manage.ref
+        ).add_depends_on(route_table)  # Add this
+
+        # Add routes to the Route Table for each VPC
+        ec2.CfnTransitGatewayRoute(self, "RouteToManageVPC",
             destination_cidr_block="10.20.20.0/24",
-            transit_gateway_id=tgw.ref,
-        )
+            transit_gateway_route_table_id=route_table.ref,
+            transit_gateway_attachment_id=tgw_attachment_vpc.ref
+        ).add_depends_on(route_table)  # Add this
 
-        # Create route table for management server VPC
-        rt_vpc_manage = ec2.CfnRouteTable(self, "RT-VPC_Manage",
-            vpc_id=vpc_manage.vpc_id,
-        )
-
-        #Create route in route table for management VPC
-        ec2.CfnRoute(self, "Route-VPC_Manage-to-VPC_Web",
-            route_table_id=rt_vpc_manage.attr_route_table_id,
+        ec2.CfnTransitGatewayRoute(self, "RouteToWebVPC",
             destination_cidr_block="10.10.10.0/24",
-            transit_gateway_id=tgw.ref,
-        )
+            transit_gateway_route_table_id=route_table.ref,
+            transit_gateway_attachment_id=tgw_attachment_vpc_manage.ref
+        ).add_depends_on(route_table)  # Add this
