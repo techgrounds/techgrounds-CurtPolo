@@ -205,51 +205,69 @@ class CloudProjectStack(Stack):
             value=lb.load_balancer_dns_name
         )
 
-        # # Create a NACL for the web server VPC
-        # nacl_web = ec2.CfnNetworkAcl(
-        #     self,
-        #     "WebServerNacl",
-        #     vpc_id=vpc_web.vpc_id
-        # )
+        # Create a NACL for the web server VPC
+        nacl_web = ec2.CfnNetworkAcl(
+            self,
+            "WebServerNacl",
+            vpc_id=vpc_web.vpc_id
+        )
 
-        # # Inbound rule in vpc_web
-        # ec2.CfnNetworkAclEntry(
-        #     self,
-        #     "WebServerNaclInbound",
-        #     network_acl_id=nacl_web.ref,
-        #     rule_number=100,
-        #     protocol="-1",  # all
-        #     rule_action="allow",  # allow
-        #     egress=False,  # inbound
-        #     cidr_block=vpc_manage.vpc_cidr_block,  # CIDR of vpc_manage
-        # )
+        # Inbound rule in vpc_web for SSH
+        ec2.CfnNetworkAclEntry(
+            self,
+            "WebServerNaclInboundSSH",
+            network_acl_id=nacl_web.ref,
+            rule_number=100,
+            protocol="6",  # TCP
+            rule_action="allow",  # allow
+            egress=False,  # inbound
+            port_range=ec2.CfnNetworkAclEntry.PortRangeProperty(
+                from_=22,
+                to=22
+            ),
+            cidr_block="10.20.20.0/24",  # CIDR of vpc_manage
+        )
 
-        # # Create a NACL for the management server VPC
-        # nacl_manage = ec2.CfnNetworkAcl(
-        #     self,
-        #     "ManagementServerNacl",
-        #     vpc_id=vpc_manage.vpc_id
-        # )
+        # Create a NACL for the management server VPC
+        nacl_manage = ec2.CfnNetworkAcl(
+            self,
+            "ManagementServerNacl",
+            vpc_id=vpc_manage.vpc_id
+        )
 
-        # # Outbound rule in vpc_manage
-        # ec2.CfnNetworkAclEntry(
-        #     self,
-        #     "ManagementServerNaclOutbound",
-        #     network_acl_id=nacl_manage.ref,
-        #     rule_number=100,
-        #     protocol="-1",  # all
-        #     rule_action="allow",  # allow
-        #     egress=True,  # outbound
-        #     cidr_block=vpc_web.vpc_cidr_block,  # CIDR of vpc_web
-        # )
+        # Outbound rule in vpc_manage for SSH
+        ec2.CfnNetworkAclEntry(
+            self,
+            "ManagementServerNaclOutboundSSH",
+            network_acl_id=nacl_manage.ref,
+            rule_number=100,
+            protocol="6",  # TCP
+            rule_action="allow",  # allow
+            egress=True,  # outbound
+            port_range=ec2.CfnNetworkAclEntry.PortRangeProperty(
+                from_=22,
+                to=22
+            ),
+            cidr_block="10.10.10.0/24",  # CIDR of vpc_web
+        )
 
-        # # Associate NACL to the subnet of the WebServer
-        # ec2.CfnSubnetNetworkAclAssociation(
-        #     self,
-        #     "WebServerSubnetNaclAssociation",
-        #     web_subnet = vpc_web.public_subnets[0],
-        #     network_acl_id=nacl_web.ref,
-        # )
+        # Associate NACL to all the subnets of the WebServer
+        for i, subnet in enumerate(vpc_web.public_subnets + vpc_web.private_subnets, 1):
+            ec2.CfnSubnetNetworkAclAssociation(
+                self,
+                f"WebServerSubnet{i}NaclAssociation",
+                subnet_id=subnet.subnet_id,
+                network_acl_id=nacl_web.ref,
+        )
+            
+        # Associate NACL to all the subnets of the ManagementServer
+        for i, subnet in enumerate(vpc_manage.public_subnets + vpc_manage.private_subnets, 1):
+            ec2.CfnSubnetNetworkAclAssociation(
+                self,
+                f"ManagementServerSubnet{i}NaclAssociation",
+                subnet_id=subnet.subnet_id,
+                network_acl_id=nacl_manage.ref,
+        )
 
         # Define instance_arn using the ARN of the EC2 instance you created
         # Get the account ID and region for the ARN
