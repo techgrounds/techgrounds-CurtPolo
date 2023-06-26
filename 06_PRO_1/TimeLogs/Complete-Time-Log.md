@@ -157,3 +157,43 @@ most of them had to do with how I pull the credentials out of secrets mananger a
 I used chatGPT to troubleshoot each individual error code until I found the codes that were able to snyth and deploy without error.
 ## Learnings
 I did learn that I can use a code to randomly generate a strong password and add the requirments the password needs to adhere by
+
+# Wednesday June 21, 2023
+
+## Daily Report
+
+## Obstacles
+
+## Solutions
+
+## Learnings
+
+# Thursday June 22, 2023
+
+## Daily Report
+
+## Obstacles
+
+## Solutions
+
+## Learnings
+
+# Friday June 23, 2023
+
+## Daily Report
+
+## Obstacles
+
+## Solutions
+
+## Learnings
+
+# Monday June 26, 2023
+
+## Daily Report
+
+## Obstacles
+
+## Solutions
+
+## Learnings

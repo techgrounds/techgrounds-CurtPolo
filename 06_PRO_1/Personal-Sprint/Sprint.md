@@ -23,3 +23,19 @@ I will also look into locally testing AWS CDK applications in order to test thei
 
 ## Metrics
 If I am able to test the code to deploy my VPCs in the eu-central-1 region, into AZ A and AZ B and have the main communication between the two happen on AZ A, I will consider this weeks sprint as a success.
+
+# Week 3
+
+## Goal
+
+## Methods
+
+## Metrics
+
+# Week 4
+
+## Goal
+
+## Methods
+
+## Metrics

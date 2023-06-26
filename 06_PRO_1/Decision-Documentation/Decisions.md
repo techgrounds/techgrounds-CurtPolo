@@ -25,3 +25,19 @@ I made the decision to make some changes to my infrastructure diagram.
 
 # Week 3 - Workflow
 I was thinking about adding a stack for each service being created and then making a class for them now. But I decided that it should be considered a way to make my code more tidy. So I rather have a fully working code first then if I have time, split everything up to make it more organized
+
+# Week 4 - Workflow
+Due to the fact that I have been absolutely stuck with deployment errors related to my structure, NACL and Security Group. I decided to take the approach of a colleagues husband which is more expierienced in IT and restructred my code to avoid dependency issues and also I made everything into a comment and uncomment and deployed everything one by one step by step to find out exactly where my problems are.
+
+I managed to do this successfully at the start of the week. So now I have no previous deployment errors.
+
+My main error I was receiving was that my two security groups can't reference each other because they are in two different VPCs. (Casper did indicate that it could be a dependency issue)
+
+I found a way around it by adding the cidr of the subnet my management server is on instead of the security group, as seen below.
+
+## Allow SSH from management server to web server
+        web_server_sg.add_ingress_rule(
+            ec2.Peer.ipv4("10.20.20.64/26"),  # Replace this with the CIDR block of the management server's subnet
+            ec2.Port.tcp(22),
+            "Allow SSH from management server"
+        )
