@@ -97,6 +97,13 @@ class CloudProjectStack(Stack):
             security_group_name="ManagementServerSG"
         )
 
+        # Allow SSH from management server to web server
+        web_server_sg.add_ingress_rule(
+            ec2.Peer.ipv4("10.20.20.64/26"),  # Replace this with the CIDR block of the management server's subnet
+            ec2.Port.tcp(22),
+            "Allow SSH from management server"
+        )
+
 
         # Create the EC2 web server instance
         ec2_instance = ec2.Instance(self, "Cloud10Webserver",
