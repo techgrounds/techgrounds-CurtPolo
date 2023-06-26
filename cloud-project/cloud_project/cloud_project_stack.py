@@ -43,6 +43,19 @@ class CloudProjectStack(Stack):
             nat_gateways=1,
         )
 
+        # Create the management server VPC
+        vpc_manage = ec2.Vpc(self, "Cloud10VPCManage",
+            ip_addresses=ec2.IpAddresses.cidr("10.20.20.0/24"),
+            max_azs=2,
+            subnet_configuration=[
+                ec2.SubnetConfiguration(name="public", cidr_mask=26, subnet_type=ec2.SubnetType.PUBLIC),
+                ec2.SubnetConfiguration(name="private", cidr_mask=26, subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT)
+            ],
+            enable_dns_support=True,
+            enable_dns_hostnames=True,
+            nat_gateways=1,
+        )
+
         # Create a secret in AWS Secrets Manager
         secret = sm.Secret(self, "Cloud10WSDatabaseSecret",
             description="Password for Cloud10WSDatabase",
@@ -76,6 +89,70 @@ class CloudProjectStack(Stack):
             "Allow inbound HTTP traffic"
         )
 
+        # Create management server security group
+        management_server_sg = ec2.SecurityGroup(
+            self, "ManagementServerSG",
+            vpc=vpc_manage,
+            allow_all_outbound=True,  # Allows all outbound traffic
+            security_group_name="ManagementServerSG"
+        )
+
+        # # Allow SSH access from the management server to the web server
+        # web_server_sg.add_ingress_rule(
+        #     peer=management_server_sg,
+        #     connection=ec2.Port.tcp(22),
+        #     description='Allow SSH access from the management server'
+        # )
+
+        # Create the EC2 web server instance
+        ec2_instance = ec2.Instance(self, "Cloud10Webserver",
+            instance_type=InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
+            machine_image=AmazonLinuxImage(generation=AmazonLinuxGeneration.AMAZON_LINUX_2),
+            vpc=vpc_web,
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+            block_devices=[
+                ec2.BlockDevice(
+                    device_name="/dev/xvda",
+                    volume=ec2.BlockDeviceVolume.ebs(20, encrypted=True)
+                )
+            ],
+            user_data=my_user_data,
+            security_group=web_server_sg
+        )
+
+        # Create the management server EC2 instance
+        management_ec2_instance = ec2.Instance(self, "Cloud10ManagementServer",
+            instance_type=InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
+            machine_image=AmazonLinuxImage(generation=AmazonLinuxGeneration.AMAZON_LINUX_2),
+            vpc=vpc_manage,
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT),
+            block_devices=[
+                ec2.BlockDevice(
+                    device_name="/dev/xvda",
+                    volume=ec2.BlockDeviceVolume.ebs(20, encrypted=True)
+                )
+            ],
+            user_data=my_user_data,
+            security_group=management_server_sg
+        )
+
+        # Create the RDS instance
+        # rds_instance = rds.DatabaseInstance(self, "Cloud10WSDatabase",
+        #     engine=rds.DatabaseInstanceEngine.mysql(version=rds.MysqlEngineVersion.VER_8_0),
+        #     instance_type=ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.SMALL),
+        #     vpc=vpc,
+        #     vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT),
+        #     publicly_accessible=False,
+        #     multi_az=True,
+        #     allocated_storage=20,
+        #     storage_type=rds.StorageType.GP2,
+        #     cloudwatch_logs_exports=["audit", "error", "general"],
+        #     deletion_protection=False,
+        #     database_name='Cloud10WSDatabase',
+        #     credentials=rds.Credentials.from_secret(secret),
+        #     storage_encrypted=True
+        # )
+        
         # Create an Auto Scaling group
         asg = autoscaling.AutoScalingGroup(
         self,
@@ -128,27 +205,58 @@ class CloudProjectStack(Stack):
             value=lb.load_balancer_dns_name
         )
 
-        # Create the EC2 web server instance
-        ec2_instance = ec2.Instance(self, "Cloud10Webserver",
-            instance_type=InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
-            machine_image=AmazonLinuxImage(generation=AmazonLinuxGeneration.AMAZON_LINUX_2),
-            vpc=vpc_web,
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
-            block_devices=[
-                ec2.BlockDevice(
-                    device_name="/dev/xvda",
-                    volume=ec2.BlockDeviceVolume.ebs(20, encrypted=True)
-                )
-            ],
-            user_data=my_user_data,
-            security_group=web_server_sg
-        )
+        # # Create a NACL for the web server VPC
+        # nacl_web = ec2.CfnNetworkAcl(
+        #     self,
+        #     "WebServerNacl",
+        #     vpc_id=vpc_web.vpc_id
+        # )
 
+        # # Inbound rule in vpc_web
+        # ec2.CfnNetworkAclEntry(
+        #     self,
+        #     "WebServerNaclInbound",
+        #     network_acl_id=nacl_web.ref,
+        #     rule_number=100,
+        #     protocol="-1",  # all
+        #     rule_action="allow",  # allow
+        #     egress=False,  # inbound
+        #     cidr_block=vpc_manage.vpc_cidr_block,  # CIDR of vpc_manage
+        # )
+
+        # # Create a NACL for the management server VPC
+        # nacl_manage = ec2.CfnNetworkAcl(
+        #     self,
+        #     "ManagementServerNacl",
+        #     vpc_id=vpc_manage.vpc_id
+        # )
+
+        # # Outbound rule in vpc_manage
+        # ec2.CfnNetworkAclEntry(
+        #     self,
+        #     "ManagementServerNaclOutbound",
+        #     network_acl_id=nacl_manage.ref,
+        #     rule_number=100,
+        #     protocol="-1",  # all
+        #     rule_action="allow",  # allow
+        #     egress=True,  # outbound
+        #     cidr_block=vpc_web.vpc_cidr_block,  # CIDR of vpc_web
+        # )
+
+        # # Associate NACL to the subnet of the WebServer
+        # ec2.CfnSubnetNetworkAclAssociation(
+        #     self,
+        #     "WebServerSubnetNaclAssociation",
+        #     web_subnet = vpc_web.public_subnets[0],
+        #     network_acl_id=nacl_web.ref,
+        # )
+
+        # Define instance_arn using the ARN of the EC2 instance you created
         # Get the account ID and region for the ARN
         account_id = aws_cdk.Stack.of(self).account
         region = aws_cdk.Stack.of(self).region
         instance_arn = f"arn:aws:ec2:{region}:{account_id}:instance/{ec2_instance.instance_id}"
- 
+
         # Create AWS Backup Vault for the web server
         backup_vault = backup.CfnBackupVault(
             self, "WebServerBackupVault",
@@ -190,119 +298,57 @@ class CloudProjectStack(Stack):
             )
         )
 
-        # Create the RDS instance
-        # rds_instance = rds.DatabaseInstance(self, "Cloud10WSDatabase",
-        #     engine=rds.DatabaseInstanceEngine.mysql(version=rds.MysqlEngineVersion.VER_8_0),
-        #     instance_type=ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.SMALL),
-        #     vpc=vpc,
-        #     vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT),
-        #     publicly_accessible=False,
-        #     multi_az=True,
-        #     allocated_storage=20,
-        #     storage_type=rds.StorageType.GP2,
-        #     cloudwatch_logs_exports=["audit", "error", "general"],
-        #     deletion_protection=False,
-        #     database_name='Cloud10WSDatabase',
-        #     credentials=rds.Credentials.from_secret(secret),
-        #     storage_encrypted=True
+        # # Create Transit Gateway
+        # tgw = ec2.CfnTransitGateway(self, "Cloud10TransitGateway",
+        #     amazon_side_asn=64512,  # Using your provided ASN
+        #     auto_accept_shared_attachments="enable",
+        #     default_route_table_association="enable",
+        #     default_route_table_propagation="enable",
+        #     description="Cloud10 Transit Gateway",
+        #     dns_support="enable",
+        #     vpn_ecmp_support="enable",
         # )
 
+        # # Attach VPCs to the Transit Gateway
+        # tgw_attachment_vpc = ec2.CfnTransitGatewayAttachment(self, "TgwAttachmentWebVPC",
+        #     transit_gateway_id=tgw.ref,
+        #     vpc_id=vpc_web.vpc_id,
+        #     subnet_ids=[subnet.subnet_id for subnet in vpc_web.public_subnets]
+        # )
+        # tgw_attachment_vpc.add_depends_on(tgw)  # Add this
 
-        # Create the management server VPC
-        vpc_manage = ec2.Vpc(self, "Cloud10VPCManage",
-            ip_addresses=ec2.IpAddresses.cidr("10.20.20.0/24"),
-            max_azs=2,
-            subnet_configuration=[
-                ec2.SubnetConfiguration(name="public", cidr_mask=26, subnet_type=ec2.SubnetType.PUBLIC),
-                ec2.SubnetConfiguration(name="private", cidr_mask=26, subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT)
-            ],
-            enable_dns_support=True,
-            enable_dns_hostnames=True,
-            nat_gateways=1,
-        )
+        # tgw_attachment_vpc_manage = ec2.CfnTransitGatewayAttachment(self, "TgwAttachmentManageVPC",
+        #     transit_gateway_id=tgw.ref,
+        #     vpc_id=vpc_manage.vpc_id,
+        #     subnet_ids=[subnet.subnet_id for subnet in vpc_manage.public_subnets]
+        # )
+        # tgw_attachment_vpc_manage.add_depends_on(tgw)  # Add this
 
-        # Create management server security group
-        management_server_sg = ec2.SecurityGroup(
-            self, "ManagementServerSG",
-            vpc=vpc_manage,
-            allow_all_outbound=True,  # Allows all outbound traffic
-            security_group_name="ManagementServerSG"
-        )
+        # # Create Route Tables and associate with the Transit Gateway Attachments
+        # route_table = ec2.CfnTransitGatewayRouteTable(self, "RouteTable",
+        #     transit_gateway_id=tgw.ref
+        # )
+        # route_table.add_depends_on(tgw)  # Add this
 
-        # Allow SSH access from the management server to the web server
-        web_server_sg.add_ingress_rule(
-            peer=management_server_sg,
-            connection=ec2.Port.tcp(22),
-            description='Allow SSH access from the management server'
-        )
+        # ec2.CfnTransitGatewayRouteTableAssociation(self, "RouteTableAssociationWebVPC",
+        #     transit_gateway_route_table_id=route_table.ref,
+        #     transit_gateway_attachment_id=tgw_attachment_vpc.ref
+        # ).add_depends_on(route_table)  # Add this
 
-        # Create the management server EC2 instance
-        management_ec2_instance = ec2.Instance(self, "Cloud10ManagementServer",
-            instance_type=InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
-            machine_image=AmazonLinuxImage(generation=AmazonLinuxGeneration.AMAZON_LINUX_2),
-            vpc=vpc_manage,
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT),
-            block_devices=[
-                ec2.BlockDevice(
-                    device_name="/dev/xvda",
-                    volume=ec2.BlockDeviceVolume.ebs(20, encrypted=True)
-                )
-            ],
-            user_data=my_user_data,
-            security_group=management_server_sg
-        )
+        # ec2.CfnTransitGatewayRouteTableAssociation(self, "RouteTableAssociationManageVPC",
+        #     transit_gateway_route_table_id=route_table.ref,
+        #     transit_gateway_attachment_id=tgw_attachment_vpc_manage.ref
+        # ).add_depends_on(route_table)  # Add this
 
-        # Create Transit Gateway
-        tgw = ec2.CfnTransitGateway(self, "Cloud10TransitGateway",
-            amazon_side_asn=64512,  # Using your provided ASN
-            auto_accept_shared_attachments="enable",
-            default_route_table_association="enable",
-            default_route_table_propagation="enable",
-            description="Cloud10 Transit Gateway",
-            dns_support="enable",
-            vpn_ecmp_support="enable",
-        )
+        # # Add routes to the Route Table for each VPC
+        # ec2.CfnTransitGatewayRoute(self, "RouteToManageVPC",
+        #     destination_cidr_block="10.20.20.0/24",
+        #     transit_gateway_route_table_id=route_table.ref,
+        #     transit_gateway_attachment_id=tgw_attachment_vpc.ref
+        # ).add_depends_on(route_table)  # Add this
 
-        # Attach VPCs to the Transit Gateway
-        tgw_attachment_vpc = ec2.CfnTransitGatewayAttachment(self, "TgwAttachmentWebVPC",
-            transit_gateway_id=tgw.ref,
-            vpc_id=vpc_web.vpc_id,
-            subnet_ids=[subnet.subnet_id for subnet in vpc_web.public_subnets]
-        )
-        tgw_attachment_vpc.add_depends_on(tgw)  # Add this
-
-        tgw_attachment_vpc_manage = ec2.CfnTransitGatewayAttachment(self, "TgwAttachmentManageVPC",
-            transit_gateway_id=tgw.ref,
-            vpc_id=vpc_manage.vpc_id,
-            subnet_ids=[subnet.subnet_id for subnet in vpc_manage.public_subnets]
-        )
-        tgw_attachment_vpc_manage.add_depends_on(tgw)  # Add this
-
-        # Create Route Tables and associate with the Transit Gateway Attachments
-        route_table = ec2.CfnTransitGatewayRouteTable(self, "RouteTable",
-            transit_gateway_id=tgw.ref
-        )
-        route_table.add_depends_on(tgw)  # Add this
-
-        ec2.CfnTransitGatewayRouteTableAssociation(self, "RouteTableAssociationWebVPC",
-            transit_gateway_route_table_id=route_table.ref,
-            transit_gateway_attachment_id=tgw_attachment_vpc.ref
-        ).add_depends_on(route_table)  # Add this
-
-        ec2.CfnTransitGatewayRouteTableAssociation(self, "RouteTableAssociationManageVPC",
-            transit_gateway_route_table_id=route_table.ref,
-            transit_gateway_attachment_id=tgw_attachment_vpc_manage.ref
-        ).add_depends_on(route_table)  # Add this
-
-        # Add routes to the Route Table for each VPC
-        ec2.CfnTransitGatewayRoute(self, "RouteToManageVPC",
-            destination_cidr_block="10.20.20.0/24",
-            transit_gateway_route_table_id=route_table.ref,
-            transit_gateway_attachment_id=tgw_attachment_vpc.ref
-        ).add_depends_on(route_table)  # Add this
-
-        ec2.CfnTransitGatewayRoute(self, "RouteToWebVPC",
-            destination_cidr_block="10.10.10.0/24",
-            transit_gateway_route_table_id=route_table.ref,
-            transit_gateway_attachment_id=tgw_attachment_vpc_manage.ref
-        ).add_depends_on(route_table)  # Add this
+        # ec2.CfnTransitGatewayRoute(self, "RouteToWebVPC",
+        #     destination_cidr_block="10.10.10.0/24",
+        #     transit_gateway_route_table_id=route_table.ref,
+        #     transit_gateway_attachment_id=tgw_attachment_vpc_manage.ref
+        # ).add_depends_on(route_table)  # Add this
