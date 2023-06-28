@@ -98,15 +98,15 @@ class CloudProjectStack(Stack):
         )
 
         # Allow SSH from management server to web server using vpc_manage private subnet 1
-        web_server_sg.add_ingress_rule(
-            ec2.Peer.ipv4("10.20.20.128/26"),  # Replace this with the CIDR block of the management server's subnet
+        management_server_sg.add_ingress_rule(
+            ec2.Peer.ipv4(vpc_manage.vpc_cidr_block),
             ec2.Port.tcp(22),
             "Allow SSH from management server"
         )
 
         # Allow SSH from management server to web server using vpc_manage private subnet 2
-        web_server_sg.add_ingress_rule(
-            ec2.Peer.ipv4("10.20.20.192/26"),  # Replace this with the CIDR block of the management server's subnet
+        management_server_sg.add_ingress_rule(
+            ec2.Peer.ipv4(vpc_manage.vpc_cidr_block),
             ec2.Port.tcp(22),
             "Allow SSH from management server"
         )
@@ -233,7 +233,23 @@ class CloudProjectStack(Stack):
                 from_=22,
                 to=22
             ),
-            cidr_block="10.20.20.0/24",  # CIDR of vpc_manage
+            cidr_block=vpc_manage.vpc_cidr_block,  # CIDR of vpc_manage
+        )
+
+        # Outbound rule in vpc_web for SSH
+        ec2.CfnNetworkAclEntry(
+            self,
+            "WebServerNaclOutboundSSH",
+            network_acl_id=nacl_web.ref,
+            rule_number=100,
+            protocol=6,  # TCP
+            rule_action="allow",  # allow
+            egress=False,  # outbound
+            port_range=ec2.CfnNetworkAclEntry.PortRangeProperty(
+                from_=22,
+                to=22
+            ),
+            cidr_block=vpc_manage.vpc_cidr_block,  # CIDR of vpc_manage
         )
 
         # Create a NACL for the management server VPC
@@ -241,6 +257,22 @@ class CloudProjectStack(Stack):
             self,
             "ManagementServerNacl",
             vpc_id=vpc_manage.vpc_id
+        )
+
+        # Inbound rule in vpc_manage for SSH
+        ec2.CfnNetworkAclEntry(
+            self,
+            "ManagementServerNaclInboundSSH",
+            network_acl_id=nacl_manage.ref,
+            rule_number=100,
+            protocol=6,  # TCP
+            rule_action="allow",  # allow
+            egress=True,  # inbound
+            port_range=ec2.CfnNetworkAclEntry.PortRangeProperty(
+                from_=22,
+                to=22
+            ),
+            cidr_block=vpc_web.vpc_cidr_block,  # CIDR of vpc_web
         )
 
         # Outbound rule in vpc_manage for SSH
@@ -251,12 +283,12 @@ class CloudProjectStack(Stack):
             rule_number=100,
             protocol=6,  # TCP
             rule_action="allow",  # allow
-            egress=True,  # outbound
+            egress=False,  # outbound
             port_range=ec2.CfnNetworkAclEntry.PortRangeProperty(
                 from_=22,
                 to=22
             ),
-            cidr_block="10.10.10.0/24",  # CIDR of vpc_web
+            cidr_block=vpc_web.vpc_cidr_block,  # CIDR of vpc_web
         )
 
         # Associate NACL to all the subnets of the WebServer
@@ -266,7 +298,7 @@ class CloudProjectStack(Stack):
                 f"WebServerSubnet{i}NaclAssociation",
                 subnet_id=subnet.subnet_id,
                 network_acl_id=nacl_web.ref,
-        )
+            )
             
         # Associate NACL to all the subnets of the ManagementServer
         for i, subnet in enumerate(vpc_manage.public_subnets + vpc_manage.private_subnets, 1):
@@ -275,7 +307,7 @@ class CloudProjectStack(Stack):
                 f"ManagementServerSubnet{i}NaclAssociation",
                 subnet_id=subnet.subnet_id,
                 network_acl_id=nacl_manage.ref,
-        )
+            )
 
         # Define instance_arn using the ARN of the EC2 instance you created
         # Get the account ID and region for the ARN
@@ -373,13 +405,13 @@ class CloudProjectStack(Stack):
 
         # Add routes to the Route Tables for each VPC
         ec2.CfnTransitGatewayRoute(self, "RouteToManageVPC",
-            destination_cidr_block="10.20.20.0/24",
+            destination_cidr_block=vpc_manage.vpc_cidr_block,
             transit_gateway_route_table_id=route_table_web.ref,  # Modified
             transit_gateway_attachment_id=tgw_attachment_vpc_manage.ref
         ).add_depends_on(route_table_web)  # Add this
 
         ec2.CfnTransitGatewayRoute(self, "RouteToWebVPC",
-            destination_cidr_block="10.10.10.0/24",
+            destination_cidr_block=vpc_web.vpc_cidr_block,
             transit_gateway_route_table_id=route_table_manage.ref,  # Modified
             transit_gateway_attachment_id=tgw_attachment_vpc.ref
         ).add_depends_on(route_table_manage)  # Add this
