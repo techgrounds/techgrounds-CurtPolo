@@ -32,7 +32,7 @@ class CloudProjectStack(Stack):
 
         # Create the web server VPC
         vpc_web = ec2.Vpc(self, "Cloud10VPC",
-            cidr="10.10.10.0/24",  # Modified
+            cidr="10.10.10.0/24",
             max_azs=2,
             subnet_configuration=[
                 ec2.SubnetConfiguration(name="public", cidr_mask=26, subnet_type=ec2.SubnetType.PUBLIC),
@@ -45,7 +45,7 @@ class CloudProjectStack(Stack):
 
         # Create the management server VPC
         vpc_manage = ec2.Vpc(self, "Cloud10VPCManage",
-            cidr="10.20.20.0/24",  # Modified
+            cidr="10.20.20.0/24",
             max_azs=2,
             subnet_configuration=[
                 ec2.SubnetConfiguration(name="public", cidr_mask=26, subnet_type=ec2.SubnetType.PUBLIC),
@@ -78,7 +78,7 @@ class CloudProjectStack(Stack):
         web_server_sg = ec2.SecurityGroup(
             self, "WebServerSG",
             vpc=vpc_web,
-            allow_all_outbound=True,
+            allow_all_outbound=False,
             security_group_name="WebServerSG"
         )
 
@@ -89,26 +89,54 @@ class CloudProjectStack(Stack):
             "Allow inbound HTTP traffic"
         )
 
+        # Allow inbound HTTPS traffic
+        web_server_sg.add_ingress_rule(
+            ec2.Peer.any_ipv4(),
+            ec2.Port.tcp(443),
+            "Allow inbound HTTPS traffic"
+        )
+
+        # Allow inbound SSH traffic from management server
+        web_server_sg.add_ingress_rule(
+            ec2.Peer.ipv4(vpc_manage.vpc_cidr_block),
+            ec2.Port.tcp(22),
+            "Allow inbound SSH traffic from management server"
+        )
+
+        # Allow outbound HTTP traffic
+        web_server_sg.add_egress_rule(
+            ec2.Peer.any_ipv4(),
+            ec2.Port.tcp(80),
+            "Allow outbound HTTP traffic"
+        )
+
+        # Allow outbound HTTPS traffic
+        web_server_sg.add_egress_rule(
+            ec2.Peer.any_ipv4(),
+            ec2.Port.tcp(443),
+            "Allow outbound HTTPS traffic"
+        )
+
+        # Allow outbound SSH traffic to management server
+        web_server_sg.add_egress_rule(
+            ec2.Peer.ipv4(vpc_manage.vpc_cidr_block),
+            ec2.Port.tcp(22),
+            "Allow outbound SSH traffic to management server"
+        )
+
         # Create management server security group
         management_server_sg = ec2.SecurityGroup(
             self, "ManagementServerSG",
             vpc=vpc_manage,
-            allow_all_outbound=True,  # Allows all outbound traffic
+            allow_all_outbound=True,
             security_group_name="ManagementServerSG"
         )
 
-        # Allow SSH from management server to web server using vpc_manage private subnet 1
+        # Allow inbound SSH traffic from web server via transit gateway
         management_server_sg.add_ingress_rule(
-            ec2.Peer.ipv4(vpc_manage.vpc_cidr_block),
+            ec2.Peer.ipv4(vpc_web.vpc_cidr_block),
             ec2.Port.tcp(22),
-            "Allow SSH from management server"
-        )
-
-        # Allow SSH from management server to web server using vpc_manage private subnet 2
-        management_server_sg.add_ingress_rule(
-            ec2.Peer.ipv4(vpc_manage.vpc_cidr_block),
-            ec2.Port.tcp(22),
-            "Allow SSH from management server"
+            "Allow inbound SSH traffic from web server via transit gateway"
         )
 
         # Create the EC2 web server instance
@@ -159,20 +187,20 @@ class CloudProjectStack(Stack):
         #     credentials=rds.Credentials.from_secret(secret),
         #     storage_encrypted=True
         # )
-        
+
         # Create an Auto Scaling group
         asg = autoscaling.AutoScalingGroup(
-        self,
-        "Cloud10WebserverASG",
-        vpc=vpc_web,
-        instance_type=InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
-        machine_image=AmazonLinuxImage(generation=AmazonLinuxGeneration.AMAZON_LINUX_2),
-        user_data=my_user_data,
-        security_group=web_server_sg,
-        desired_capacity=1,  # adjust to your needs
-        min_capacity=1,  # adjust to your needs
-        max_capacity=5,  # adjust to your needs
-        vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+            self,
+            "Cloud10WebserverASG",
+            vpc=vpc_web,
+            instance_type=InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
+            machine_image=AmazonLinuxImage(generation=AmazonLinuxGeneration.AMAZON_LINUX_2),
+            user_data=my_user_data,
+            security_group=web_server_sg,
+            desired_capacity=1,
+            min_capacity=1,
+            max_capacity=5,
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
             block_devices=[
                 autoscaling.BlockDevice(
                     device_name="/dev/xvda",
@@ -212,7 +240,6 @@ class CloudProjectStack(Stack):
             value=lb.load_balancer_dns_name
         )
 
-
         # Create a NACL for the web server VPC
         nacl_web = ec2.CfnNetworkAcl(
             self,
@@ -220,36 +247,100 @@ class CloudProjectStack(Stack):
             vpc_id=vpc_web.vpc_id
         )
 
-        # Inbound rule in vpc_web for SSH
+        # Inbound rule in vpc_web for HTTP
+        ec2.CfnNetworkAclEntry(
+            self,
+            "WebServerNaclInboundHTTP",
+            network_acl_id=nacl_web.ref,
+            rule_number=100,
+            protocol=6,  # TCP
+            rule_action="allow",
+            egress=False,
+            port_range=ec2.CfnNetworkAclEntry.PortRangeProperty(
+                from_=80,
+                to=80
+            ),
+            cidr_block="0.0.0.0/0",
+        )
+
+        # Inbound rule in vpc_web for HTTPS
+        ec2.CfnNetworkAclEntry(
+            self,
+            "WebServerNaclInboundHTTPS",
+            network_acl_id=nacl_web.ref,
+            rule_number=101,
+            protocol=6,  # TCP
+            rule_action="allow",
+            egress=False,
+            port_range=ec2.CfnNetworkAclEntry.PortRangeProperty(
+                from_=443,
+                to=443
+            ),
+            cidr_block="0.0.0.0/0",
+        )
+
+        # Inbound rule in vpc_web for SSH from management server via transit gateway
         ec2.CfnNetworkAclEntry(
             self,
             "WebServerNaclInboundSSH",
             network_acl_id=nacl_web.ref,
-            rule_number=100,
+            rule_number=102,
             protocol=6,  # TCP
-            rule_action="allow",  # allow
-            egress=True,  # inbound
+            rule_action="allow",
+            egress=False,
             port_range=ec2.CfnNetworkAclEntry.PortRangeProperty(
                 from_=22,
                 to=22
             ),
-            cidr_block=vpc_manage.vpc_cidr_block,  # CIDR of vpc_manage
+            cidr_block="10.20.20.0/24",  # Modified
         )
 
-        # Outbound rule in vpc_web for SSH
+        # Outbound rule in vpc_web for HTTP
+        ec2.CfnNetworkAclEntry(
+            self,
+            "WebServerNaclOutboundHTTP",
+            network_acl_id=nacl_web.ref,
+            rule_number=100,
+            protocol=6,  # TCP
+            rule_action="allow",
+            egress=True,
+            port_range=ec2.CfnNetworkAclEntry.PortRangeProperty(
+                from_=80,
+                to=80
+            ),
+            cidr_block="0.0.0.0/0",
+        )
+
+        # Outbound rule in vpc_web for HTTPS
+        ec2.CfnNetworkAclEntry(
+            self,
+            "WebServerNaclOutboundHTTPS",
+            network_acl_id=nacl_web.ref,
+            rule_number=101,
+            protocol=6,  # TCP
+            rule_action="allow",
+            egress=True,
+            port_range=ec2.CfnNetworkAclEntry.PortRangeProperty(
+                from_=443,
+                to=443
+            ),
+            cidr_block="0.0.0.0/0",
+        )
+
+        # Outbound rule in vpc_web for SSH to management server via transit gateway
         ec2.CfnNetworkAclEntry(
             self,
             "WebServerNaclOutboundSSH",
             network_acl_id=nacl_web.ref,
-            rule_number=100,
+            rule_number=102,
             protocol=6,  # TCP
-            rule_action="allow",  # allow
-            egress=False,  # outbound
+            rule_action="allow",
+            egress=True,
             port_range=ec2.CfnNetworkAclEntry.PortRangeProperty(
                 from_=22,
                 to=22
             ),
-            cidr_block=vpc_manage.vpc_cidr_block,  # CIDR of vpc_manage
+            cidr_block="10.20.20.0/24",  # Modified
         )
 
         # Create a NACL for the management server VPC
@@ -259,36 +350,36 @@ class CloudProjectStack(Stack):
             vpc_id=vpc_manage.vpc_id
         )
 
-        # Inbound rule in vpc_manage for SSH
+        # Inbound rule in vpc_manage for SSH from web server via transit gateway
         ec2.CfnNetworkAclEntry(
             self,
             "ManagementServerNaclInboundSSH",
             network_acl_id=nacl_manage.ref,
             rule_number=100,
             protocol=6,  # TCP
-            rule_action="allow",  # allow
-            egress=True,  # inbound
+            rule_action="allow",
+            egress=False,
             port_range=ec2.CfnNetworkAclEntry.PortRangeProperty(
                 from_=22,
                 to=22
             ),
-            cidr_block=vpc_web.vpc_cidr_block,  # CIDR of vpc_web
+            cidr_block="10.10.10.0/24",  # Modified
         )
 
-        # Outbound rule in vpc_manage for SSH
+        # Outbound rule in vpc_manage for SSH to web server via transit gateway
         ec2.CfnNetworkAclEntry(
             self,
             "ManagementServerNaclOutboundSSH",
             network_acl_id=nacl_manage.ref,
             rule_number=100,
             protocol=6,  # TCP
-            rule_action="allow",  # allow
-            egress=False,  # outbound
+            rule_action="allow",
+            egress=True,
             port_range=ec2.CfnNetworkAclEntry.PortRangeProperty(
                 from_=22,
                 to=22
             ),
-            cidr_block=vpc_web.vpc_cidr_block,  # CIDR of vpc_web
+            cidr_block="10.10.10.0/24",  # Modified
         )
 
         # Associate NACL to all the subnets of the WebServer
@@ -299,7 +390,7 @@ class CloudProjectStack(Stack):
                 subnet_id=subnet.subnet_id,
                 network_acl_id=nacl_web.ref,
             )
-            
+
         # Associate NACL to all the subnets of the ManagementServer
         for i, subnet in enumerate(vpc_manage.public_subnets + vpc_manage.private_subnets, 1):
             ec2.CfnSubnetNetworkAclAssociation(
@@ -309,56 +400,9 @@ class CloudProjectStack(Stack):
                 network_acl_id=nacl_manage.ref,
             )
 
-        # Define instance_arn using the ARN of the EC2 instance you created
-        # Get the account ID and region for the ARN
-        account_id = aws_cdk.Stack.of(self).account
-        region = aws_cdk.Stack.of(self).region
-        instance_arn = f"arn:aws:ec2:{region}:{account_id}:instance/{ec2_instance.instance_id}"
-
-        # Create AWS Backup Vault for the web server
-        backup_vault = backup.CfnBackupVault(
-            self, "WebServerBackupVault",
-            backup_vault_name="WebServerBackupVault"
-        )
-
-        # Backup plan rules
-        backup_plan_rules = [{
-            "ruleName": "DailyBackup",
-            "targetBackupVault": backup_vault.backup_vault_name,
-            "scheduleExpression": "cron(0 0 * * ? *)",
-            "startWindowMinutes": 60,
-            "completionWindowMinutes": 180,
-            "lifecycle": {
-                "deleteAfterDays": 7
-            }
-        }]
-
-        # Create Backup plan
-        backup_plan = backup.CfnBackupPlan(
-            self, "WebServerBackupPlan",
-            backup_plan=backup.CfnBackupPlan.BackupPlanResourceTypeProperty(
-                backup_plan_name="WebServerBackupPlan",
-                backup_plan_rule=backup_plan_rules
-            )
-        )
-
-        # Add a dependency to make sure the backup vault is created before the backup plan
-        backup_plan.node.add_dependency(backup_vault)
-
-        # Assign backup plan to resource
-        backup_selection = backup.CfnBackupSelection(
-            self, "WebServerBackupSelection",
-            backup_plan_id=backup_plan.ref,
-            backup_selection=backup.CfnBackupSelection.BackupSelectionResourceTypeProperty(
-                iam_role_arn="arn:aws:iam::017967599866:role/aws-service-role/backup.amazonaws.com/AWSServiceRoleForBackup",  # replace "account-id" with your actual AWS account ID
-                selection_name="WebServerSelection",
-                resources=[instance_arn]
-            )
-        )
-
         # Create Transit Gateway
         tgw = ec2.CfnTransitGateway(self, "Cloud10TransitGateway",
-            amazon_side_asn=64512,  # Using your provided ASN
+            amazon_side_asn=64512,
             auto_accept_shared_attachments="enable",
             default_route_table_association="enable",
             default_route_table_propagation="enable",
@@ -382,36 +426,35 @@ class CloudProjectStack(Stack):
         )
         tgw_attachment_vpc_manage.add_depends_on(tgw)  # Add this
 
-        # Create Route Tables and associate with the Transit Gateway Attachments
-        route_table_web = ec2.CfnTransitGatewayRouteTable(self, "RouteTableWebVPC",  # Modified
+        # Create Transit Gateway route tables for the VPCs
+        tgw_route_table_web = ec2.CfnTransitGatewayRouteTable(self, "TgwRouteTableWeb",
             transit_gateway_id=tgw.ref
         )
-        route_table_web.add_depends_on(tgw)  # Add this
 
-        route_table_manage = ec2.CfnTransitGatewayRouteTable(self, "RouteTableManageVPC",  # Modified
+        tgw_route_table_manage = ec2.CfnTransitGatewayRouteTable(self, "TgwRouteTableManage",
             transit_gateway_id=tgw.ref
         )
-        route_table_manage.add_depends_on(tgw)  # Add this
 
-        ec2.CfnTransitGatewayRouteTableAssociation(self, "RouteTableAssociationWebVPC",
-            transit_gateway_route_table_id=route_table_web.ref,
-            transit_gateway_attachment_id=tgw_attachment_vpc.ref
-        ).add_depends_on(route_table_web)  # Add this
+        # Associate the VPCs with the Transit Gateway route tables
+        ec2.CfnTransitGatewayRouteTableAssociation(self, "TgwRouteTableAssociationWeb",
+            transit_gateway_attachment_id=tgw_attachment_vpc.ref,
+            transit_gateway_route_table_id=tgw_route_table_web.ref
+        )
 
-        ec2.CfnTransitGatewayRouteTableAssociation(self, "RouteTableAssociationManageVPC",
-            transit_gateway_route_table_id=route_table_manage.ref,
+        ec2.CfnTransitGatewayRouteTableAssociation(self, "TgwRouteTableAssociationManage",
+            transit_gateway_attachment_id=tgw_attachment_vpc_manage.ref,
+            transit_gateway_route_table_id=tgw_route_table_manage.ref
+        )
+
+        # Create routes in the Transit Gateway route tables
+        ec2.CfnTransitGatewayRoute(self, "TgwRouteToManageVPC",
+            destination_cidr_block="10.20.20.0/24",
+            transit_gateway_route_table_id=tgw_route_table_web.ref,
             transit_gateway_attachment_id=tgw_attachment_vpc_manage.ref
-        ).add_depends_on(route_table_manage)  # Add this
+        )
 
-        # Add routes to the Route Tables for each VPC
-        ec2.CfnTransitGatewayRoute(self, "RouteToManageVPC",
-            destination_cidr_block=vpc_manage.vpc_cidr_block,
-            transit_gateway_route_table_id=route_table_web.ref,  # Modified
-            transit_gateway_attachment_id=tgw_attachment_vpc_manage.ref
-        ).add_depends_on(route_table_web)  # Add this
-
-        ec2.CfnTransitGatewayRoute(self, "RouteToWebVPC",
-            destination_cidr_block=vpc_web.vpc_cidr_block,
-            transit_gateway_route_table_id=route_table_manage.ref,  # Modified
+        ec2.CfnTransitGatewayRoute(self, "TgwRouteToWebVPC",
+            destination_cidr_block="10.10.10.0/24",
+            transit_gateway_route_table_id=tgw_route_table_manage.ref,
             transit_gateway_attachment_id=tgw_attachment_vpc.ref
-        ).add_depends_on(route_table_manage)  # Add this
+        )
