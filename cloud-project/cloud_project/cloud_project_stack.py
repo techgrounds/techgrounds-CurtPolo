@@ -147,18 +147,18 @@ class CloudProjectStack(Stack):
         # Create a route to the Transit Gateway in route_table1
         ec2.CfnTransitGatewayRoute(self, "TransitGatewayRouteWeb1",
             transit_gateway_attachment_id=tgw.ref,
-            destination_cidr_block="0.0.0.0/0",
+            destination_cidr_block="10.20.20.0/24",
             route_table_id=route_table_web1.ref
         )
 
         # Create a route to the Transit Gateway in route_table2
         ec2.CfnTransitGatewayRoute(self, "TransitGatewayRouteWeb2",
             transit_gateway_attachment_id=tgw.ref,
-            destination_cidr_block="0.0.0.0/0",
+            destination_cidr_block="10.20.20.0/24",
             route_table_id=route_table_web2.ref
         )
 
-        # Create a default vpc web route pointing to the NAT Gateway
+        # Create a default vpc web route pointing to the NAT Gateway for non-transit traffic
         ec2.CfnRoute(self, "VPCWebDefaultRoute1", 
                         route_table_id=route_table_web1.ref,
                         destination_cidr_block="0.0.0.0/0", 
@@ -241,14 +241,14 @@ class CloudProjectStack(Stack):
         # Create a route to the Transit Gateway in route_table_manage1
         ec2.CfnTransitGatewayRoute(self, "TransitGatewayRouteManage1",
             transit_gateway_attachment_id=tgw.ref,
-            destination_cidr_block="0.0.0.0/0",
+            destination_cidr_block="10.10.10.0/24",
             route_table_id=route_table_manage1.ref
         )
 
         # Create a route to the Transit Gateway in route_table_manage2
         ec2.CfnTransitGatewayRoute(self, "TransitGatewayRouteManage2",
             transit_gateway_attachment_id=tgw.ref,
-            destination_cidr_block="0.0.0.0/0",
+            destination_cidr_block="10.10.10.0/24",
             route_table_id=route_table_manage2.ref
         )
 
