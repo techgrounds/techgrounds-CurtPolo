@@ -148,14 +148,14 @@ class CloudProjectStack(Stack):
         ec2.CfnTransitGatewayRoute(self, "TransitGatewayRouteWeb1",
             transit_gateway_attachment_id=tgw.ref,
             destination_cidr_block="10.20.20.0/24",
-            route_table_id=route_table_web1.ref
+            transit_gateway_route_table_id=route_table_web1.ref
         )
 
         # Create a route to the Transit Gateway in route_table2
         ec2.CfnTransitGatewayRoute(self, "TransitGatewayRouteWeb2",
             transit_gateway_attachment_id=tgw.ref,
             destination_cidr_block="10.20.20.0/24",
-            route_table_id=route_table_web2.ref
+            transit_gateway_route_table_id=route_table_web2.ref
         )
 
         # Create a default vpc web route pointing to the NAT Gateway for non-transit traffic
@@ -200,7 +200,7 @@ class CloudProjectStack(Stack):
         # Associate route table with public subnet 2 in management VPC
         ec2.CfnSubnetRouteTableAssociation(self, "SubnetRouteTableAssociation2Manage",
                                             subnet_id=public_subnet_2_manage.ref,
-                                            route_table_id=route_table_manage2
+                                            route_table_id=route_table_manage2.ref
                                             )
 
         
@@ -242,14 +242,14 @@ class CloudProjectStack(Stack):
         ec2.CfnTransitGatewayRoute(self, "TransitGatewayRouteManage1",
             transit_gateway_attachment_id=tgw.ref,
             destination_cidr_block="10.10.10.0/24",
-            route_table_id=route_table_manage1.ref
+            transit_gateway_route_table_id=route_table_manage1.ref
         )
 
         # Create a route to the Transit Gateway in route_table_manage2
         ec2.CfnTransitGatewayRoute(self, "TransitGatewayRouteManage2",
             transit_gateway_attachment_id=tgw.ref,
             destination_cidr_block="10.10.10.0/24",
-            route_table_id=route_table_manage2.ref
+            transit_gateway_route_table_id=route_table_manage2.ref
         )
 
         # Create a default vpc manage route pointing to the NAT Gateway
