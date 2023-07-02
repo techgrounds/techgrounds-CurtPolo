@@ -41,3 +41,8 @@ I found a way around it by adding the cidr of the subnet my management server is
             ec2.Port.tcp(22),
             "Allow SSH from management server"
         )
+
+
+# Week 5
+
+# Week 6

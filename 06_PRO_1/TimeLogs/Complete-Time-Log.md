@@ -197,3 +197,43 @@ I did learn that I can use a code to randomly generate a strong password and add
 ## Solutions
 
 ## Learnings
+
+# Tuesday June 27, 2023
+
+## Daily Report
+
+## Obstacles
+
+## Solutions
+
+## Learnings
+
+# Wednesday June 28, 2023
+
+## Daily Report
+
+## Obstacles
+
+## Solutions
+
+## Learnings
+
+# Thursday June 29, 2023
+
+## Daily Report
+
+## Obstacles
+
+## Solutions
+
+## Learnings
+
+# Friday June 30, 2023
+
+## Daily Report
+
+## Obstacles
+
+## Solutions
+
+## Learnings

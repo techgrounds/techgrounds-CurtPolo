@@ -27,12 +27,32 @@ If I am able to test the code to deploy my VPCs in the eu-central-1 region, into
 # Week 3
 
 ## Goal
+To be able to resolve issues I am having with my code when it comes to:
+
+- Connecting my management server to my admin server
+- Resolving TypeErros and Attribute Erros I am getting
+- Resolve issues with my security group and NACL
+## Methods
+Try to break down each error code in multiple one by one and try to resolve them the same way.
+## Metrics
+If I can correct the errors to at least have a deployable code and manage to make a connection between the two servers I would consider it a success
+# Week 4
+
+## Goal
 
 ## Methods
 
 ## Metrics
 
-# Week 4
+# Week 5
+
+## Goal
+
+## Methods
+
+## Metrics
+
+# Week 6
 
 ## Goal
 
