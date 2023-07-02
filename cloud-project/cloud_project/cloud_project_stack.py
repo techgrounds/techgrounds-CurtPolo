@@ -295,6 +295,22 @@ class CloudProjectStack(Stack):
             cidr_block="10.20.20.0/24",  # Modified
         )
 
+        # Add a new inbound rule in vpc_web for SSH from the entire vpc_manage CIDR block
+        ec2.CfnNetworkAclEntry(
+            self,
+            "WebServerNaclInboundSSHFromManage",
+            network_acl_id=nacl_web.ref,
+            rule_number=103,
+            protocol=6,  # TCP
+            rule_action="allow",
+            egress=False,
+            port_range=ec2.CfnNetworkAclEntry.PortRangeProperty(
+                from_=22,
+                to=22
+            ),
+            cidr_block=vpc_manage.vpc_cidr_block,
+        )
+
         # Outbound rule in vpc_web for HTTP
         ec2.CfnNetworkAclEntry(
             self,
@@ -343,6 +359,22 @@ class CloudProjectStack(Stack):
             cidr_block="10.20.20.0/24",  # Modified
         )
 
+        # Add a new outbound rule in vpc_web for SSH traffic to the entire vpc_manage CIDR block
+        ec2.CfnNetworkAclEntry(
+            self,
+            "WebServerNaclOutboundSSHToManage",
+            network_acl_id=nacl_web.ref,
+            rule_number=103,
+            protocol=6,  # TCP
+            rule_action="allow",
+            egress=True,
+            port_range=ec2.CfnNetworkAclEntry.PortRangeProperty(
+                from_=22,
+                to=22
+            ),
+            cidr_block=vpc_manage.vpc_cidr_block,
+        )
+
         # Create a NACL for the management server VPC
         nacl_manage = ec2.CfnNetworkAcl(
             self,
@@ -366,6 +398,22 @@ class CloudProjectStack(Stack):
             cidr_block="10.10.10.0/24",  # Modified
         )
 
+        # Add a new inbound rule in vpc_manage for SSH from the entire vpc_web CIDR block
+        ec2.CfnNetworkAclEntry(
+            self,
+            "ManagementServerNaclInboundSSHFromWeb",
+            network_acl_id=nacl_manage.ref,
+            rule_number=101,
+            protocol=6,  # TCP
+            rule_action="allow",
+            egress=False,
+            port_range=ec2.CfnNetworkAclEntry.PortRangeProperty(
+                from_=22,
+                to=22
+            ),
+            cidr_block=vpc_web.vpc_cidr_block,
+        )
+
         # Outbound rule in vpc_manage for SSH to web server via transit gateway
         ec2.CfnNetworkAclEntry(
             self,
@@ -382,84 +430,75 @@ class CloudProjectStack(Stack):
             cidr_block="10.10.10.0/24",  # Modified
         )
 
-        # Associate NACL to all the subnets of the WebServer
-        for i, subnet in enumerate(vpc_web.public_subnets + vpc_web.private_subnets, 1):
-            ec2.CfnSubnetNetworkAclAssociation(
-                self,
-                f"WebServerSubnet{i}NaclAssociation",
-                subnet_id=subnet.subnet_id,
-                network_acl_id=nacl_web.ref,
-            )
-
-        # Associate NACL to all the subnets of the ManagementServer
-        for i, subnet in enumerate(vpc_manage.public_subnets + vpc_manage.private_subnets, 1):
-            ec2.CfnSubnetNetworkAclAssociation(
-                self,
-                f"ManagementServerSubnet{i}NaclAssociation",
-                subnet_id=subnet.subnet_id,
-                network_acl_id=nacl_manage.ref,
-            )
-
-        # Create Transit Gateway
-        tgw = ec2.CfnTransitGateway(self, "Cloud10TransitGateway",
-            amazon_side_asn=64512,
-            auto_accept_shared_attachments="enable",
-            default_route_table_association="enable",
-            default_route_table_propagation="enable",
-            description="Cloud10 Transit Gateway",
-            dns_support="enable",
-            vpn_ecmp_support="enable",
+        # Add a new outbound rule in vpc_manage for SSH traffic to the entire vpc_web CIDR block
+        ec2.CfnNetworkAclEntry(
+            self,
+            "ManagementServerNaclOutboundSSHToWeb",
+            network_acl_id=nacl_manage.ref,
+            rule_number=101,
+            protocol=6,  # TCP
+            rule_action="allow",
+            egress=True,
+            port_range=ec2.CfnNetworkAclEntry.PortRangeProperty(
+                from_=22,
+                to=22
+            ),
+            cidr_block=vpc_web.vpc_cidr_block,
         )
 
-        # Attach VPCs to the Transit Gateway
-        tgw_attachment_vpc = ec2.CfnTransitGatewayAttachment(self, "TgwAttachmentWebVPC",
-            transit_gateway_id=tgw.ref,
+        # Create a transit gateway
+        transit_gateway = ec2.CfnTransitGateway(
+            self,
+            "TransitGateway",
+            amazon_side_asn=64512
+        )
+
+        # Create a transit gateway route table
+        transit_gateway_route_table = ec2.CfnTransitGatewayRouteTable(
+            self,
+            "TransitGatewayRouteTable",
+            transit_gateway_id=transit_gateway.ref
+        )
+
+        # Associate the transit gateway route table with the web server VPC
+        transit_gateway_vpc_attachment_web = ec2.CfnTransitGatewayAttachment(
+            self,
+            "TransitGatewayAttachmentWeb",
+            transit_gateway_id=transit_gateway.ref,
             vpc_id=vpc_web.vpc_id,
             subnet_ids=[subnet.subnet_id for subnet in vpc_web.public_subnets]
         )
-        tgw_attachment_vpc.add_depends_on(tgw)  # Add this
 
-        tgw_attachment_vpc_manage = ec2.CfnTransitGatewayAttachment(self, "TgwAttachmentManageVPC",
-            transit_gateway_id=tgw.ref,
+        # Associate the transit gateway route table with the management server VPC
+        transit_gateway_vpc_attachment_manage = ec2.CfnTransitGatewayAttachment(
+            self,
+            "TransitGatewayAttachmentManage",
+            transit_gateway_id=transit_gateway.ref,
             vpc_id=vpc_manage.vpc_id,
             subnet_ids=[subnet.subnet_id for subnet in vpc_manage.public_subnets]
         )
-        tgw_attachment_vpc_manage.add_depends_on(tgw)  # Add this
 
-        # Create Transit Gateway route tables for the VPCs
-        tgw_route_table_web = ec2.CfnTransitGatewayRouteTable(self, "TgwRouteTableWeb",
-            transit_gateway_id=tgw.ref
+        # Add a route from the web server VPC to the management server VPC via transit gateway
+        ec2.CfnTransitGatewayRoute(
+            self,
+            "TransitGatewayRouteWebToManage",
+            transit_gateway_route_table_id=transit_gateway_route_table.ref,
+            destination_cidr_block=vpc_manage.vpc_cidr_block,
+            transit_gateway_attachment_id=transit_gateway_vpc_attachment_manage.ref
         )
 
-        tgw_route_table_manage = ec2.CfnTransitGatewayRouteTable(self, "TgwRouteTableManage",
-            transit_gateway_id=tgw.ref
+        # Add a route from the management server VPC to the web server VPC via transit gateway
+        ec2.CfnTransitGatewayRoute(
+            self,
+            "TransitGatewayRouteManageToWeb",
+            transit_gateway_route_table_id=transit_gateway_route_table.ref,
+            destination_cidr_block=vpc_web.vpc_cidr_block,
+            transit_gateway_attachment_id=transit_gateway_vpc_attachment_web.ref
         )
 
-        # Associate the VPCs with the Transit Gateway route tables
-        ec2.CfnTransitGatewayRouteTableAssociation(self, "TgwRouteTableAssociationWeb",
-            transit_gateway_attachment_id=tgw_attachment_vpc.ref,
-            transit_gateway_route_table_id=tgw_route_table_web.ref
+        # Output the transit gateway ID
+        aws_cdk.CfnOutput(
+            self,
+            "TransitGatewayID",
+            value=transit_gateway.ref
         )
-
-        ec2.CfnTransitGatewayRouteTableAssociation(self, "TgwRouteTableAssociationManage",
-            transit_gateway_attachment_id=tgw_attachment_vpc_manage.ref,
-            transit_gateway_route_table_id=tgw_route_table_manage.ref
-        )
-
-        # Create routes in the Transit Gateway route tables
-        ec2.CfnTransitGatewayRoute(self, "TgwRouteToManageVPC",
-            destination_cidr_block="10.20.20.0/24",
-            transit_gateway_route_table_id=tgw_route_table_web.ref,
-            transit_gateway_attachment_id=tgw_attachment_vpc_manage.ref
-        )
-
-        ec2.CfnTransitGatewayRoute(self, "TgwRouteToWebVPC",
-            destination_cidr_block="10.10.10.0/24",
-            transit_gateway_route_table_id=tgw_route_table_manage.ref,
-            transit_gateway_attachment_id=tgw_attachment_vpc.ref
-        )
-
-        
-app = aws_cdk.App()
-CloudProjectStack(app, "CloudProjectStack")
-app.synth()
