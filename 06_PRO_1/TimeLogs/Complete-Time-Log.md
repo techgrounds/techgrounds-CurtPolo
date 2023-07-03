@@ -237,3 +237,15 @@ I did learn that I can use a code to randomly generate a strong password and add
 ## Solutions
 
 ## Learnings
+
+# Friday July 3, 2023
+
+## Daily Report
+I was finally able to fix my issue with not being able to create a new route in a route table.
+
+I now need to finish up some essential V1.0 stuff so I can start with V1.1
+## Obstacles
+- create a route in my route table to my transit gateway.
+## Solutions
+- I found the correct code to do so, modified it and also added a dependency to run that code only after my transit gateway is created.
+## Learnings

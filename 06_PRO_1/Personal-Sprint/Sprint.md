@@ -53,9 +53,17 @@ If I can just deploy my code with 0 Attribute, Type or deployment errors and man
 # Week 5
 
 ## Goal
-
+My goal is to finish the following V1.0 tasks that are essential to V1.1
+- Finish my KMS
+- Fix and Test my auto-scaling group
+- Fix and test my load balancer
+- Change my admin server to a windows server
+- RDP into my admin server
 ## Methods
-
+- AWS documentations
+- YouTube videos
+- AIs just for guidance 
+- Classmates
 ## Metrics
 
 # Week 6
