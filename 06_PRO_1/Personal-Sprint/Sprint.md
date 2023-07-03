@@ -39,11 +39,17 @@ If I can correct the errors to at least have a deployable code and manage to mak
 # Week 4
 
 ## Goal
+To be able to resolve issues I am having with my code when it comes to:
 
+- Connecting my management server to my admin server
+- Resolving Type errors and Attribute errors I am getting
+- Resolve issues with adding a route to my transit gateway in my route table via code.
 ## Methods
+Trying to re-write my code in a different way that would allow me more control of each section.
 
+Using 3 different set of AIs to analyse my error codes one by one to try and get to a solution.
 ## Metrics
-
+If I can just deploy my code with 0 Attribute, Type or deployment errors and manage to adjust my NACL and security groups to allow traffic of all my subnets, I would consider it success. Basically if I complete all the goals.
 # Week 5
 
 ## Goal
