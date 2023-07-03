@@ -171,22 +171,22 @@ class CloudProjectStack(Stack):
             security_group=management_server_sg
         )
 
-        # Create the RDS instance
-        rds_instance = rds.DatabaseInstance(self, "Cloud10WSDatabase",
-            engine=rds.DatabaseInstanceEngine.mysql(version=rds.MysqlEngineVersion.VER_8_0),
-            instance_type=ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.SMALL),
-            vpc=vpc_web,
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
-            publicly_accessible=False,
-            multi_az=True,
-            allocated_storage=20,
-            storage_type=rds.StorageType.GP2,
-            cloudwatch_logs_exports=["audit", "error", "general"],
-            deletion_protection=False,
-            database_name='Cloud10WSDatabase',
-            credentials=rds.Credentials.from_secret(secret),
-            storage_encrypted=True
-        )
+        # # Create the RDS instance
+        # rds_instance = rds.DatabaseInstance(self, "Cloud10WSDatabase",
+        #     engine=rds.DatabaseInstanceEngine.mysql(version=rds.MysqlEngineVersion.VER_8_0),
+        #     instance_type=ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.SMALL),
+        #     vpc=vpc_web,
+        #     vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
+        #     publicly_accessible=False,
+        #     multi_az=True,
+        #     allocated_storage=20,
+        #     storage_type=rds.StorageType.GP2,
+        #     cloudwatch_logs_exports=["audit", "error", "general"],
+        #     deletion_protection=False,
+        #     database_name='Cloud10WSDatabase',
+        #     credentials=rds.Credentials.from_secret(secret),
+        #     storage_encrypted=True
+        # )
 
         # Create an Auto Scaling group
         asg = autoscaling.AutoScalingGroup(
@@ -453,6 +453,13 @@ class CloudProjectStack(Stack):
             amazon_side_asn=64512
         )
 
+        # TEST Add a dependency between the transit gateway and the route creation loop
+        transit_gateway_dependency = ec2.CfnTransitGatewayRouteTable(
+            self,
+            "TransitGatewayDependency",
+            transit_gateway_id=transit_gateway.ref
+        )
+
         # Create a transit gateway route table
         transit_gateway_route_table = ec2.CfnTransitGatewayRouteTable(
             self,
@@ -503,25 +510,13 @@ class CloudProjectStack(Stack):
             value=transit_gateway.ref
         )
 
-
-        # # Get the management server subnet
-        # management_subnet = vpc_manage.select_subnets(subnet_type=ec2.SubnetType.PUBLIC).subnet_ids[0]
-
-        # # Get the route table ID of the management server subnet
-        # management_route_table_id = ec2.RouteTable.from_route_table_attributes(
-        #     self,
-        #     "ManagementServerRouteTable",
-        #     route_table_id=management_subnet.route_table_id,
-        # ).route_table_id
-
-        # # Create a route in the management server route table for the transit gateway
-        # transit_gateway_route = ec2.CfnRoute(
-        #     self,
-        #     "ManagementServerTransitGatewayRoute",
-        #     route_table_id=management_route_table_id,
-        #     destination_cidr_block="10.10.10.0/24",
-        #     transit_gateway_id=transit_gateway.ref
-        # )
-
-        # # Add dependencies
-        # transit_gateway_route.add_depends_on(transit_gateway)
+        # TEST Add transit gateway routes to public subnets of vpc_manage
+        for index, subnet in enumerate(vpc_manage.public_subnets):
+            route_table_id = subnet.route_table.route_table_id
+            route = ec2.CfnRoute(
+                self, f'PublicSubnetTransitGatewayRoute{index}',
+                destination_cidr_block='10.10.10.0/24',
+                route_table_id=route_table_id,
+                transit_gateway_id=transit_gateway.ref
+            )
+            route.add_dependency(transit_gateway_dependency)
