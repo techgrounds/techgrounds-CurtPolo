@@ -37,7 +37,7 @@ class CloudProjectStack(Stack):
             max_azs=2,
             subnet_configuration=[
                 ec2.SubnetConfiguration(name="public", cidr_mask=26, subnet_type=ec2.SubnetType.PUBLIC),
-                ec2.SubnetConfiguration(name="private", cidr_mask=26, subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT)
+                ec2.SubnetConfiguration(name="private", cidr_mask=26, subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS)
             ],
             enable_dns_support=True,
             enable_dns_hostnames=True,
@@ -75,55 +75,81 @@ class CloudProjectStack(Stack):
         # Create custom UserData from the script
         my_user_data = ec2.UserData.custom(user_data_script)
 
-        # Create web server security group
-        web_server_sg = ec2.SecurityGroup(
-            self, "WebServerSG",
+        # Create load balancer security group
+        load_balancer_sg = ec2.SecurityGroup(
+            self, "LoadBalancerSG",
             vpc=vpc_web,
-            allow_all_outbound=False,
-            security_group_name="WebServerSG"
+            allow_all_outbound=True,
+            security_group_name="LoadBalancerSG"
         )
 
         # Allow inbound HTTP traffic
-        web_server_sg.add_ingress_rule(
+        load_balancer_sg.add_ingress_rule(
             ec2.Peer.any_ipv4(),
             ec2.Port.tcp(80),
             "Allow inbound HTTP traffic"
         )
 
         # Allow inbound HTTPS traffic
-        web_server_sg.add_ingress_rule(
+        load_balancer_sg.add_ingress_rule(
             ec2.Peer.any_ipv4(),
             ec2.Port.tcp(443),
             "Allow inbound HTTPS traffic"
         )
 
         # Allow inbound SSH traffic from management server
-        web_server_sg.add_ingress_rule(
+        load_balancer_sg.add_ingress_rule(
             ec2.Peer.ipv4(vpc_manage.vpc_cidr_block),
             ec2.Port.tcp(22),
             "Allow inbound SSH traffic from management server"
         )
 
         # Allow outbound HTTP traffic
-        web_server_sg.add_egress_rule(
+        load_balancer_sg.add_egress_rule(
             ec2.Peer.any_ipv4(),
             ec2.Port.tcp(80),
             "Allow outbound HTTP traffic"
         )
 
         # Allow outbound HTTPS traffic
-        web_server_sg.add_egress_rule(
+        load_balancer_sg.add_egress_rule(
             ec2.Peer.any_ipv4(),
             ec2.Port.tcp(443),
             "Allow outbound HTTPS traffic"
         )
 
-        # Allow outbound SSH traffic to management server
-        web_server_sg.add_egress_rule(
-            ec2.Peer.ipv4(vpc_manage.vpc_cidr_block),
-            ec2.Port.tcp(22),
-            "Allow outbound SSH traffic to management server"
+        # Create web server security group
+        web_server_sg = ec2.SecurityGroup(
+            self, "WebServerSG",
+            vpc=vpc_web,
+            allow_all_outbound=True,
+            security_group_name="WebServerSG"
         )
+
+        # Allow inbound HTTP traffic from load balancer security group
+        web_server_sg.add_ingress_rule(
+            ec2.SecurityGroup.from_security_group_id(
+                self, "LoadBalancerSGRefHTTP", load_balancer_sg.security_group_id),
+            ec2.Port.tcp(80),
+            "Allow inbound HTTP traffic from load balancer security group"
+        )
+
+        # Allow inbound HTTPS traffic from load balancer security group
+        web_server_sg.add_ingress_rule(
+            ec2.SecurityGroup.from_security_group_id(
+                self, "LoadBalancerSGRefHTTPS", load_balancer_sg.security_group_id),
+            ec2.Port.tcp(443),
+            "Allow inbound HTTPS traffic from load balancer security group"
+        )
+
+        # Allow inbound SSH traffic from load balancer security group
+        web_server_sg.add_ingress_rule(
+            ec2.SecurityGroup.from_security_group_id(
+                self, "LoadBalancerSGRefSSH", load_balancer_sg.security_group_id),
+            ec2.Port.tcp(22),
+            "Allow inbound SSH traffic from load balancer"
+        )
+
 
         # Create management server security group
         management_server_sg = ec2.SecurityGroup(
@@ -145,7 +171,7 @@ class CloudProjectStack(Stack):
             instance_type=InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
             machine_image=AmazonLinuxImage(generation=AmazonLinuxGeneration.AMAZON_LINUX_2),
             vpc=vpc_web,
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
             block_devices=[
                 ec2.BlockDevice(
                     device_name="/dev/xvda",
@@ -201,7 +227,7 @@ class CloudProjectStack(Stack):
             desired_capacity=1,
             min_capacity=1,
             max_capacity=3,
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
             block_devices=[
                 autoscaling.BlockDevice(
                     device_name="/dev/xvda",
@@ -215,7 +241,8 @@ class CloudProjectStack(Stack):
             self,
             "MyLoadBalancer",
             vpc=vpc_web,
-            internet_facing=True
+            internet_facing=True,
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC)
         )
 
         # Create a target group
@@ -248,7 +275,7 @@ class CloudProjectStack(Stack):
             vpc_id=vpc_web.vpc_id
         )
 
-        # Inbound rule in vpc_web for HTTP
+        # Inbound rule in vpc_web for HTTP traffic from load balancer security group
         ec2.CfnNetworkAclEntry(
             self,
             "WebServerNaclInboundHTTP",
@@ -261,15 +288,15 @@ class CloudProjectStack(Stack):
                 from_=80,
                 to=80
             ),
-            cidr_block="0.0.0.0/0",
+            cidr_block=load_balancer_sg.security_group_id
         )
 
-        # Inbound rule in vpc_web for HTTPS
+        # Inbound rule in vpc_web for HTTPS traffic from load balancer security group
         ec2.CfnNetworkAclEntry(
             self,
             "WebServerNaclInboundHTTPS",
             network_acl_id=nacl_web.ref,
-            rule_number=101,
+            rule_number=200,
             protocol=6,  # TCP
             rule_action="allow",
             egress=False,
@@ -277,15 +304,15 @@ class CloudProjectStack(Stack):
                 from_=443,
                 to=443
             ),
-            cidr_block="0.0.0.0/0",
+            cidr_block=load_balancer_sg.security_group_id
         )
 
-        # Inbound rule in vpc_web for SSH from management server via transit gateway
+        # Inbound rule in vpc_web for SSH from management server via load balancer security group
         ec2.CfnNetworkAclEntry(
             self,
             "WebServerNaclInboundSSH",
             network_acl_id=nacl_web.ref,
-            rule_number=102,
+            rule_number=300,
             protocol=6,  # TCP
             rule_action="allow",
             egress=False,
@@ -293,24 +320,24 @@ class CloudProjectStack(Stack):
                 from_=22,
                 to=22
             ),
-            cidr_block="10.20.20.0/24",  # Modified
+            cidr_block=load_balancer_sg.security_group_id
         )
 
-        # Add a new inbound rule in vpc_web for SSH from the entire vpc_manage CIDR block
-        ec2.CfnNetworkAclEntry(
-            self,
-            "WebServerNaclInboundSSHFromManage",
-            network_acl_id=nacl_web.ref,
-            rule_number=103,
-            protocol=6,  # TCP
-            rule_action="allow",
-            egress=False,
-            port_range=ec2.CfnNetworkAclEntry.PortRangeProperty(
-                from_=22,
-                to=22
-            ),
-            cidr_block=vpc_manage.vpc_cidr_block,
-        )
+        # # Add a new inbound rule in vpc_web for SSH from the entire vpc_manage CIDR block
+        # ec2.CfnNetworkAclEntry(
+        #     self,
+        #     "WebServerNaclInboundSSHFromManage",
+        #     network_acl_id=nacl_web.ref,
+        #     rule_number=103,
+        #     protocol=6,  # TCP
+        #     rule_action="allow",
+        #     egress=False,
+        #     port_range=ec2.CfnNetworkAclEntry.PortRangeProperty(
+        #         from_=22,
+        #         to=22
+        #     ),
+        #     cidr_block=vpc_manage.vpc_cidr_block,
+        # )
 
         # Outbound rule in vpc_web for HTTP
         ec2.CfnNetworkAclEntry(
@@ -333,7 +360,7 @@ class CloudProjectStack(Stack):
             self,
             "WebServerNaclOutboundHTTPS",
             network_acl_id=nacl_web.ref,
-            rule_number=101,
+            rule_number=200,
             protocol=6,  # TCP
             rule_action="allow",
             egress=True,
@@ -349,7 +376,7 @@ class CloudProjectStack(Stack):
             self,
             "WebServerNaclOutboundSSH",
             network_acl_id=nacl_web.ref,
-            rule_number=102,
+            rule_number=300,
             protocol=6,  # TCP
             rule_action="allow",
             egress=True,
@@ -365,7 +392,7 @@ class CloudProjectStack(Stack):
             self,
             "WebServerNaclOutboundSSHToManage",
             network_acl_id=nacl_web.ref,
-            rule_number=103,
+            rule_number=400,
             protocol=6,  # TCP
             rule_action="allow",
             egress=True,
@@ -404,7 +431,7 @@ class CloudProjectStack(Stack):
             self,
             "ManagementServerNaclInboundSSHFromWeb",
             network_acl_id=nacl_manage.ref,
-            rule_number=101,
+            rule_number=200,
             protocol=6,  # TCP
             rule_action="allow",
             egress=False,
@@ -436,7 +463,7 @@ class CloudProjectStack(Stack):
             self,
             "ManagementServerNaclOutboundSSHToWeb",
             network_acl_id=nacl_manage.ref,
-            rule_number=101,
+            rule_number=200,
             protocol=6,  # TCP
             rule_action="allow",
             egress=True,
