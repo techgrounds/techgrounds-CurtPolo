@@ -323,22 +323,6 @@ class CloudProjectStack(Stack):
             cidr_block=vpc_web.public_subnets[0].ipv4_cidr_block
         )
 
-        # # Add a new inbound rule in vpc_web for SSH from the entire vpc_manage CIDR block
-        # ec2.CfnNetworkAclEntry(
-        #     self,
-        #     "WebServerNaclInboundSSHFromManage",
-        #     network_acl_id=nacl_web.ref,
-        #     rule_number=103,
-        #     protocol=6,  # TCP
-        #     rule_action="allow",
-        #     egress=False,
-        #     port_range=ec2.CfnNetworkAclEntry.PortRangeProperty(
-        #         from_=22,
-        #         to=22
-        #     ),
-        #     cidr_block=vpc_manage.vpc_cidr_block,
-        # )
-
         # Outbound rule in vpc_web for HTTP
         ec2.CfnNetworkAclEntry(
             self,
