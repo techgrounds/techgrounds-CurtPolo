@@ -288,7 +288,7 @@ class CloudProjectStack(Stack):
                 from_=80,
                 to=80
             ),
-            cidr_block=load_balancer_sg.security_group_id
+            cidr_block=vpc_web.public_subnets[0].ipv4_cidr_block
         )
 
         # Inbound rule in vpc_web for HTTPS traffic from load balancer security group
@@ -304,7 +304,7 @@ class CloudProjectStack(Stack):
                 from_=443,
                 to=443
             ),
-            cidr_block=load_balancer_sg.security_group_id
+            cidr_block=vpc_web.public_subnets[0].ipv4_cidr_block
         )
 
         # Inbound rule in vpc_web for SSH from management server via load balancer security group
@@ -320,7 +320,7 @@ class CloudProjectStack(Stack):
                 from_=22,
                 to=22
             ),
-            cidr_block=load_balancer_sg.security_group_id
+            cidr_block=vpc_web.public_subnets[0].ipv4_cidr_block
         )
 
         # # Add a new inbound rule in vpc_web for SSH from the entire vpc_manage CIDR block
