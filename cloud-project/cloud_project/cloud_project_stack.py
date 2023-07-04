@@ -200,7 +200,7 @@ class CloudProjectStack(Stack):
             security_group=web_server_sg,
             desired_capacity=1,
             min_capacity=1,
-            max_capacity=5,
+            max_capacity=3,
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
             block_devices=[
                 autoscaling.BlockDevice(
