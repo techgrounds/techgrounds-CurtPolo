@@ -1,5 +1,5 @@
-from aws_cdk import Stack, aws_s3 as s3, aws_ec2 as ec2, aws_rds as rds, aws_secretsmanager as sm, aws_backup as backup, aws_iam as iam, aws_elasticloadbalancingv2 as elbv2, aws_autoscaling as autoscaling
-import aws_cdk
+from aws_cdk import Stack, aws_s3 as s3, aws_ec2 as ec2, aws_rds as rds, aws_secretsmanager as sm, aws_backup as backup, aws_iam as iam, aws_elasticloadbalancingv2 as elbv2, aws_autoscaling as autoscaling, aws_cloudwatch as cloudwatch
+import aws_cdk as cdk
 import aws_cdk.aws_kms as kms
 from aws_cdk.aws_ec2 import AmazonLinuxImage, AmazonLinuxGeneration, InstanceClass, InstanceSize, InstanceType, UserData
 from constructs import Construct
@@ -232,6 +232,80 @@ class CloudProjectStack(Stack):
                 )
             ],
         )
+        
+        # Scale up based on CPU utilization
+        cpu_scale_up_policy = autoscaling.CfnScalingPolicy(
+            self,
+            "CpuScaleUpPolicy",
+            auto_scaling_group_name=asg.auto_scaling_group_name,
+            policy_type="TargetTrackingScaling",
+            # policy_name="CpuScaleUpPolicy",
+            scaling_target_id=asg.auto_scaling_group_name,
+            target_tracking_scaling_policy_configuration={
+                "target_value": 70,
+                "predefined_metric_specification": {
+                    "predefined_metric_type": "ASGAverageCPUUtilization"
+                }
+            }
+        )
+        cpu_scale_up_policy.add_depends_on(asg)
+
+        # Scale down based on CPU utilization
+        cpu_scale_down_policy = autoscaling.CfnScalingPolicy(
+            self,
+            "CpuScaleDownPolicy",
+            auto_scaling_group_name=asg.auto_scaling_group_name,
+            policy_type="TargetTrackingScaling",
+            # policy_name="CpuScaleDownPolicy",
+            scaling_target_id=asg.auto_scaling_group_name,
+            target_tracking_scaling_policy_configuration={
+                "target_value": 50,
+                "predefined_metric_specification": {
+                    "predefined_metric_type": "ASGAverageCPUUtilization"
+                }
+            }
+        )
+        cpu_scale_down_policy.add_depends_on(asg)
+
+
+
+        # Create a CloudWatch alarm for scaling up
+        cpu_utilization_high_alarm = cloudwatch.CfnAlarm(
+            self,
+            "CpuUtilizationHighAlarm",
+            alarm_description="Scale up if CPU utilization is high",
+            comparison_operator="GreaterThanThreshold",
+            evaluation_periods=1,
+            metric_name="CPUUtilization",
+            namespace="AWS/EC2",
+            period=cdk.Duration.seconds(60),
+            statistic="Average",
+            threshold=70,
+            alarm_actions=[cpu_scale_up_policy.ref],
+            dimensions=[cloudwatch.Dimension(name="AutoScalingGroupName", value=asg.auto_scaling_group_name)]
+        )
+
+        # Create a CloudWatch alarm for scaling down
+        cpu_utilization_low_alarm = cloudwatch.CfnAlarm(
+            self,
+            "CpuUtilizationLowAlarm",
+            alarm_description="Scale down if CPU utilization is low",
+            comparison_operator="LessThanThreshold",
+            evaluation_periods=1,
+            metric_name="CPUUtilization",
+            namespace="AWS/EC2",
+            period=cdk.Duration.seconds(60),
+            statistic="Average",
+            threshold=50,
+            alarm_actions=[cpu_scale_down_policy.ref],
+            dimensions=[cloudwatch.Dimension(name="AutoScalingGroupName", value=asg.auto_scaling_group_name)]
+        )
+
+        # Attach the CloudWatch alarms to the Auto Scaling group
+        cpu_utilization_high_alarm.add_depends_on(asg)
+        cpu_utilization_low_alarm.add_depends_on(asg)
+        
+        
 
         # Create a load balancer
         lb = elbv2.ApplicationLoadBalancer(
@@ -239,7 +313,15 @@ class CloudProjectStack(Stack):
             "MyLoadBalancer",
             vpc=vpc_web,
             internet_facing=True,
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC)
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+            health_check=elbv2.HealthCheck(
+                path="/",
+                healthy_http_codes="200-299",
+                interval=cdk.Duration.seconds(30),
+                timeout=cdk.Duration.seconds(5),
+                healthy_threshold_count=3,
+                unhealthy_threshold_count=2
+            )
         )
 
         # Create a target group
@@ -259,7 +341,7 @@ class CloudProjectStack(Stack):
         )
 
         # Output the load balancer DNS name
-        aws_cdk.CfnOutput(
+        cdk.CfnOutput(
             self,
             "LoadBalancerDNS",
             value=lb.load_balancer_dns_name
@@ -513,7 +595,7 @@ class CloudProjectStack(Stack):
         )
 
         # Output the transit gateway ID
-        aws_cdk.CfnOutput(
+        cdk.CfnOutput(
             self,
             "TransitGatewayID",
             value=transit_gateway.ref
