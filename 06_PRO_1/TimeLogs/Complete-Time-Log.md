@@ -249,3 +249,16 @@ I now need to finish up some essential V1.0 stuff so I can start with V1.1
 ## Solutions
 - I found the correct code to do so, modified it and also added a dependency to run that code only after my transit gateway is created.
 ## Learnings
+
+# Friday July 4, 2023
+
+## Daily Report
+I created a load balancer security group and started the process of making my load balancer a proxy for my web server.
+
+I also started to look into KMS
+## Obstacles
+I was having some issues with the process of doing an SSH to my load balancer and having it re-direct it to my web server
+## Solutions
+I was informed that I could attempt to use the transit gateway to allow my management server to SSH to my web server directly.
+## Learnings
+That it is possible to reach the private subnet of another VPC via the transit gateway. But also that SSH could be redirected via the load balancer if done properly

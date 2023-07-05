@@ -97,13 +97,6 @@ class CloudProjectStack(Stack):
             "Allow inbound HTTPS traffic"
         )
 
-        # Allow inbound SSH traffic from management server
-        load_balancer_sg.add_ingress_rule(
-            ec2.Peer.ipv4(vpc_manage.vpc_cidr_block),
-            ec2.Port.tcp(22),
-            "Allow inbound SSH traffic from management server"
-        )
-
         # Allow outbound HTTP traffic
         load_balancer_sg.add_egress_rule(
             ec2.Peer.any_ipv4(),
@@ -140,14 +133,6 @@ class CloudProjectStack(Stack):
                 self, "LoadBalancerSGRefHTTPS", load_balancer_sg.security_group_id),
             ec2.Port.tcp(443),
             "Allow inbound HTTPS traffic from load balancer security group"
-        )
-
-        # Allow inbound SSH traffic from load balancer security group
-        web_server_sg.add_ingress_rule(
-            ec2.SecurityGroup.from_security_group_id(
-                self, "LoadBalancerSGRefSSH", load_balancer_sg.security_group_id),
-            ec2.Port.tcp(22),
-            "Allow inbound SSH traffic from load balancer"
         )
 
 
@@ -307,7 +292,7 @@ class CloudProjectStack(Stack):
             cidr_block=vpc_web.public_subnets[0].ipv4_cidr_block
         )
 
-        # Inbound rule in vpc_web for SSH from management server via load balancer security group
+        # Inbound rule in vpc_web for SSH from management server via transit gateway
         ec2.CfnNetworkAclEntry(
             self,
             "WebServerNaclInboundSSH",
@@ -320,7 +305,7 @@ class CloudProjectStack(Stack):
                 from_=22,
                 to=22
             ),
-            cidr_block=vpc_web.public_subnets[0].ipv4_cidr_block
+            cidr_block=vpc_manage.public_subnets[0].ipv4_cidr_block
         )
 
         # Outbound rule in vpc_web for HTTP
@@ -485,7 +470,7 @@ class CloudProjectStack(Stack):
             "TransitGatewayAttachmentWeb",
             transit_gateway_id=transit_gateway.ref,
             vpc_id=vpc_web.vpc_id,
-            subnet_ids=[subnet.subnet_id for subnet in vpc_web.public_subnets]
+            subnet_ids=[subnet.subnet_id for subnet in vpc_web.private_subnets]
         )
 
         # Associate the transit gateway route table with the management server VPC

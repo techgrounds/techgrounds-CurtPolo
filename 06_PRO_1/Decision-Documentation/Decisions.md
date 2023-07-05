@@ -43,6 +43,11 @@ I found a way around it by adding the cidr of the subnet my management server is
         )
 
 
-# Week 5
+# Week 5 - Diagram Stage 3
+Due to version 1.1 there will be some changes to the diagram.
+
+- My web server will be moved to a private subnet with egress
+- A load balancer will be placed in the public subnet of my web vpc and act as proxy to my web server
+- My management server will be on a public subnet and be able to SSH to my web server via the transit gateway.
 
 # Week 6
