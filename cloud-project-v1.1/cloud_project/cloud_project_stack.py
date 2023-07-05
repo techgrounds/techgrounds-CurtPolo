@@ -12,7 +12,7 @@ class CloudProjectStack(Stack):
 
         # Check if S3 bucket exists
         s3_client = boto3.client('s3')
-        bucket_name = 'test-cloud10-project-bucket'
+        bucket_name = 'cloud10-project-bucket'
         bucket_exists = True
 
         try:
@@ -26,7 +26,7 @@ class CloudProjectStack(Stack):
             bucket = s3.Bucket(
                 self,
                 "CloudProjectBucket",
-                bucket_name="test-cloud10-project-bucket"
+                bucket_name="cloud10-project-bucket"
             )
 
             # Set bucket region
@@ -137,6 +137,14 @@ class CloudProjectStack(Stack):
                 self, "LoadBalancerSGRefHTTPS", load_balancer_sg.security_group_id),
             ec2.Port.tcp(443),
             "Allow inbound HTTPS traffic from load balancer security group"
+        )
+
+        
+        # Allow inbound SSH traffic from management server via transit gateway
+        web_server_sg.add_ingress_rule(
+            ec2.Peer.ipv4(vpc_manage.vpc_cidr_block),
+            ec2.Port.tcp(22),
+            "Allow inbound SSH traffic from management server via transit gateway"
         )
 
 
