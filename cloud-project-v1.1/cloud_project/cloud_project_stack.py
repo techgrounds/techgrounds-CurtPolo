@@ -4,25 +4,29 @@ import aws_cdk.aws_kms as kms
 from aws_cdk.aws_ec2 import AmazonLinuxImage, AmazonLinuxGeneration, InstanceClass, InstanceSize, InstanceType, UserData
 from constructs import Construct
 import json
+import boto3
 
 class CloudProjectStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         # Check if S3 bucket exists
-        existing_bucket = s3.Bucket.from_bucket_name(
-            self,
-            "ExistingBucket",
-            bucket_name="cloud10-project-bucket"
-        )
+        s3_client = boto3.client('s3')
+        bucket_name = 'test-cloud10-project-bucket'
+        bucket_exists = True
+
+        try:
+            s3_client.head_bucket(Bucket=bucket_name)
+        except:
+            bucket_exists = False
 
         # Create S3 bucket if it doesn't exist
-        if existing_bucket is None:
+        if not bucket_exists:
             # Create S3 bucket
             bucket = s3.Bucket(
                 self,
                 "CloudProjectBucket",
-                bucket_name="cloud10-project-bucket"
+                bucket_name="test-cloud10-project-bucket"
             )
 
             # Set bucket region
@@ -517,3 +521,4 @@ class CloudProjectStack(Stack):
                 transit_gateway_id=transit_gateway.ref
             )
             route.add_dependency(transit_gateway_dependency)
+
