@@ -237,16 +237,15 @@ class CloudProjectStack(Stack):
         cpu_scale_up_policy = autoscaling.CfnScalingPolicy(
             self,
             "CpuScaleUpPolicy",
-            auto_scaling_group_name=asg.auto_scaling_group_name,
             policy_type="TargetTrackingScaling",
             # policy_name="CpuScaleUpPolicy",
-            scaling_target_id=asg.auto_scaling_group_name,
-            target_tracking_scaling_policy_configuration={
-                "target_value": 70,
-                "predefined_metric_specification": {
-                    "predefined_metric_type": "ASGAverageCPUUtilization"
-                }
-            }
+            auto_scaling_group_name=asg.auto_scaling_group_name,
+            target_tracking_configuration=autoscaling.CfnScalingPolicy.TargetTrackingConfigurationProperty(
+                target_value=70,
+                predefined_metric_specification=autoscaling.CfnScalingPolicy.PredefinedMetricSpecificationProperty(
+                    predefined_metric_type="ASGAverageCPUUtilization"
+                )
+            )
         )
         cpu_scale_up_policy.add_depends_on(asg)
 
@@ -254,18 +253,19 @@ class CloudProjectStack(Stack):
         cpu_scale_down_policy = autoscaling.CfnScalingPolicy(
             self,
             "CpuScaleDownPolicy",
-            auto_scaling_group_name=asg.auto_scaling_group_name,
             policy_type="TargetTrackingScaling",
             # policy_name="CpuScaleDownPolicy",
-            scaling_target_id=asg.auto_scaling_group_name,
-            target_tracking_scaling_policy_configuration={
-                "target_value": 50,
-                "predefined_metric_specification": {
-                    "predefined_metric_type": "ASGAverageCPUUtilization"
-                }
-            }
+            auto_scaling_group_name=asg.auto_scaling_group_name,
+            target_tracking_configuration=autoscaling.CfnScalingPolicy.TargetTrackingConfigurationProperty(
+                target_value=50,
+                predefined_metric_specification=autoscaling.CfnScalingPolicy.PredefinedMetricSpecificationProperty(
+                    predefined_metric_type="ASGAverageCPUUtilization"
+                )
+            )
         )
         cpu_scale_down_policy.add_depends_on(asg)
+
+
 
 
 
