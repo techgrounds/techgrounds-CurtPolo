@@ -163,21 +163,21 @@ class CloudProjectStack(Stack):
             "Allow inbound SSH traffic from web server via transit gateway"
         )
 
-        # Create the EC2 web server instance
-        ec2_instance = ec2.Instance(self, "Cloud10Webserver",
-            instance_type=InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
-            machine_image=AmazonLinuxImage(generation=AmazonLinuxGeneration.AMAZON_LINUX_2),
-            vpc=vpc_web,
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
-            block_devices=[
-                ec2.BlockDevice(
-                    device_name="/dev/xvda",
-                    volume=ec2.BlockDeviceVolume.ebs(20, encrypted=True)
-                )
-            ],
-            user_data=my_user_data,
-            security_group=web_server_sg
-        )
+        # # Create the EC2 web server instance
+        # ec2_instance = ec2.Instance(self, "Cloud10Webserver",
+        #     instance_type=InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
+        #     machine_image=AmazonLinuxImage(generation=AmazonLinuxGeneration.AMAZON_LINUX_2),
+        #     vpc=vpc_web,
+        #     vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
+        #     block_devices=[
+        #         ec2.BlockDevice(
+        #             device_name="/dev/xvda",
+        #             volume=ec2.BlockDeviceVolume.ebs(20, encrypted=True)
+        #         )
+        #     ],
+        #     user_data=my_user_data,
+        #     security_group=web_server_sg
+        # )
 
         # Create the management server EC2 instance
         management_ec2_instance = ec2.Instance(self, "Cloud10ManagementServer",
@@ -215,7 +215,8 @@ class CloudProjectStack(Stack):
         # Create an Auto Scaling group
         asg = autoscaling.AutoScalingGroup(
             self,
-            "Cloud10WebserverASG",
+            "Cloud10WebServerASG",
+            auto_scaling_group_name="Cloud10WebServerASG",
             vpc=vpc_web,
             instance_type=InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
             machine_image=AmazonLinuxImage(generation=AmazonLinuxGeneration.AMAZON_LINUX_2),
@@ -232,13 +233,15 @@ class CloudProjectStack(Stack):
                 )
             ],
         )
-        
+
+        # Get the underlying CfnAutoScalingGroup object (to eliminate the type error in the dependency)
+        cfn_asg = asg.node.default_child
+
         # Scale up based on CPU utilization
         cpu_scale_up_policy = autoscaling.CfnScalingPolicy(
             self,
             "CpuScaleUpPolicy",
             policy_type="TargetTrackingScaling",
-            # policy_name="CpuScaleUpPolicy",
             auto_scaling_group_name=asg.auto_scaling_group_name,
             target_tracking_configuration=autoscaling.CfnScalingPolicy.TargetTrackingConfigurationProperty(
                 target_value=70,
@@ -247,14 +250,13 @@ class CloudProjectStack(Stack):
                 )
             )
         )
-        cpu_scale_up_policy.add_depends_on(asg)
+        cpu_scale_up_policy.add_dependency(cfn_asg)
 
         # Scale down based on CPU utilization
         cpu_scale_down_policy = autoscaling.CfnScalingPolicy(
             self,
             "CpuScaleDownPolicy",
             policy_type="TargetTrackingScaling",
-            # policy_name="CpuScaleDownPolicy",
             auto_scaling_group_name=asg.auto_scaling_group_name,
             target_tracking_configuration=autoscaling.CfnScalingPolicy.TargetTrackingConfigurationProperty(
                 target_value=50,
@@ -263,26 +265,22 @@ class CloudProjectStack(Stack):
                 )
             )
         )
-        cpu_scale_down_policy.add_depends_on(asg)
-
-
-
-
+        cpu_scale_down_policy.add_dependency(cfn_asg)
 
         # Create a CloudWatch alarm for scaling up
         cpu_utilization_high_alarm = cloudwatch.CfnAlarm(
             self,
             "CpuUtilizationHighAlarm",
-            alarm_description="Scale up if CPU utilization is high",
+            alarm_description="Scale up if CPU utilization is greater than 70 percent for 1 minute",
             comparison_operator="GreaterThanThreshold",
             evaluation_periods=1,
             metric_name="CPUUtilization",
             namespace="AWS/EC2",
-            period=cdk.Duration.seconds(60),
+            period=60, # 1 minute in seconds
             statistic="Average",
             threshold=70,
             alarm_actions=[cpu_scale_up_policy.ref],
-            dimensions=[cloudwatch.Dimension(name="AutoScalingGroupName", value=asg.auto_scaling_group_name)]
+            dimensions=[cloudwatch.CfnAlarm.DimensionProperty(name="AutoScalingGroupName", value=asg.auto_scaling_group_name)]
         )
 
         # Create a CloudWatch alarm for scaling down
@@ -294,45 +292,51 @@ class CloudProjectStack(Stack):
             evaluation_periods=1,
             metric_name="CPUUtilization",
             namespace="AWS/EC2",
-            period=cdk.Duration.seconds(60),
+            period=60, # 1 minute in seconds
             statistic="Average",
             threshold=50,
             alarm_actions=[cpu_scale_down_policy.ref],
-            dimensions=[cloudwatch.Dimension(name="AutoScalingGroupName", value=asg.auto_scaling_group_name)]
+            dimensions=[cloudwatch.CfnAlarm.DimensionProperty(name="AutoScalingGroupName", value=asg.auto_scaling_group_name)]
         )
 
         # Attach the CloudWatch alarms to the Auto Scaling group
-        cpu_utilization_high_alarm.add_depends_on(asg)
-        cpu_utilization_low_alarm.add_depends_on(asg)
+        cpu_utilization_high_alarm.add_dependency(cfn_asg)
+        cpu_utilization_low_alarm.add_dependency(cfn_asg)
+
+
         
         
 
         # Create a load balancer
         lb = elbv2.ApplicationLoadBalancer(
             self,
-            "MyLoadBalancer",
+            "WebLoadBalancer",
             vpc=vpc_web,
             internet_facing=True,
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
-            health_check=elbv2.HealthCheck(
-                path="/",
-                healthy_http_codes="200-299",
-                interval=cdk.Duration.seconds(30),
-                timeout=cdk.Duration.seconds(5),
-                healthy_threshold_count=3,
-                unhealthy_threshold_count=2
+            load_balancer_name="WebLoadBalancer",
+            security_group=load_balancer_sg,
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC)
             )
-        )
-
+        
         # Create a target group
         target_group = elbv2.ApplicationTargetGroup(
-            self,
-            "MyTargetGroup",
+             self,
+            "WebServerTargetGroup",
             vpc=vpc_web,
             port=80,
-            targets=[asg]
-        )
-
+            protocol=elbv2.ApplicationProtocol.HTTP,
+            targets=[asg],
+            health_check=elbv2.HealthCheck(
+                port="80",
+                protocol=elbv2.Protocol.HTTP,
+                path="/",
+                timeout=cdk.Duration.seconds(5),
+                healthy_threshold_count=2,
+                unhealthy_threshold_count=6,
+                interval=cdk.Duration.seconds(10)
+            ))
+            
+                    
         # Add the target group to the load balancer
         listener = lb.add_listener(
             "MyListener",
