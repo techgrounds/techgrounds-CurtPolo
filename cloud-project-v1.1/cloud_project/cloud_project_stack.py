@@ -341,8 +341,22 @@ class CloudProjectStack(Stack):
         listener = lb.add_listener(
             "MyListener",
             port=80,
-            default_action=elbv2.ListenerAction.forward([target_group])
+            open=True,
         )
+
+        # Configure the HTTP Listener to redirect requests to HTTPS
+        listener.add_action(
+            "HTTPSRedirect",
+            action=elbv2.ListenerAction.redirect(
+                protocol="HTTPS",
+                port="443",
+                host="#{host}",
+                path="/#{path}",
+                query="#{query}",
+            ),
+        )
+
+        
 
         # Output the load balancer DNS name
         cdk.CfnOutput(
