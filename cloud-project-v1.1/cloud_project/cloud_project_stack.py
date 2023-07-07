@@ -1,4 +1,4 @@
-from aws_cdk import Stack, aws_s3 as s3, aws_ec2 as ec2, aws_rds as rds, aws_secretsmanager as sm, aws_backup as backup, aws_iam as iam, aws_elasticloadbalancingv2 as elbv2, aws_autoscaling as autoscaling, aws_cloudwatch as cloudwatch
+from aws_cdk import Stack, aws_s3 as s3, aws_ec2 as ec2, aws_rds as rds, aws_secretsmanager as sm, aws_backup as backup, aws_iam as iam, aws_elasticloadbalancingv2 as elbv2, aws_autoscaling as autoscaling, aws_cloudwatch as cloudwatch, aws_certificatemanager as acm
 import aws_cdk as cdk
 import aws_cdk.aws_kms as kms
 from aws_cdk.aws_ec2 import AmazonLinuxImage, AmazonLinuxGeneration, InstanceClass, InstanceSize, InstanceType, UserData
@@ -312,7 +312,7 @@ class CloudProjectStack(Stack):
             self,
             "WebLoadBalancer",
             vpc=vpc_web,
-            internet_facing=True,
+            internet_facing=True, # This makes the load balancer publically accessable
             load_balancer_name="WebLoadBalancer",
             security_group=load_balancer_sg,
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC)

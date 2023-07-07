@@ -238,7 +238,7 @@ I did learn that I can use a code to randomly generate a strong password and add
 
 ## Learnings
 
-# Friday July 3, 2023
+# Monday July 3, 2023
 
 ## Daily Report
 I was finally able to fix my issue with not being able to create a new route in a route table.
@@ -250,7 +250,7 @@ I now need to finish up some essential V1.0 stuff so I can start with V1.1
 - I found the correct code to do so, modified it and also added a dependency to run that code only after my transit gateway is created.
 ## Learnings
 
-# Friday July 4, 2023
+# Tuesday July 4, 2023
 
 ## Daily Report
 I created a load balancer security group and started the process of making my load balancer a proxy for my web server.
@@ -262,3 +262,26 @@ I was having some issues with the process of doing an SSH to my load balancer an
 I was informed that I could attempt to use the transit gateway to allow my management server to SSH to my web server directly.
 ## Learnings
 That it is possible to reach the private subnet of another VPC via the transit gateway. But also that SSH could be redirected via the load balancer if done properly
+
+# Wednesday July 5, 2023
+
+## Daily Report
+I shifted my focus towards the load balancer and auto scaling.
+## Obstacles
+I encountered a lot of Attribute errors and Type Erros
+## Solutions
+I was not able to find a solution at the time
+## Learnings
+N/A
+
+# Thursday July 6, 2023
+
+## Daily Report
+I was able to seemingly fix the auto-scaling and addapt the load balancer and also removed the previous 
+web-server ec2 instance that I made, because it was no longer needed and was replaced by the load balancer.
+## Obstacles
+I encountered a lot of Attribute errors and Type Erros
+## Solutions
+Thanks to a classmate I was able to troubleshoot and find out that I was missing the autoscaling group name in one line of code.
+## Learnings
+To try solutions that are not indicated as directly as I would like
