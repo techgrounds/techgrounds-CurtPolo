@@ -4,36 +4,36 @@ import aws_cdk.aws_kms as kms
 from aws_cdk.aws_ec2 import AmazonLinuxImage, AmazonLinuxGeneration, InstanceClass, InstanceSize, InstanceType, UserData
 from constructs import Construct
 import json
-import boto3
+#import boto3
 
 class CloudProjectStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        # Check if S3 bucket exists
-        s3_client = boto3.client('s3')
-        bucket_name = 'cloud10-project-bucket'
-        bucket_exists = True
+        # # Check if S3 bucket exists
+        # s3_client = boto3.client('s3')
+        # bucket_name = 'cloud10-project-bucket'
+        # bucket_exists = True
 
-        try:
-            s3_client.head_bucket(Bucket=bucket_name)
-        except:
-            bucket_exists = False
+        # try:
+        #     s3_client.head_bucket(Bucket=bucket_name)
+        # except:
+        #     bucket_exists = False
 
-        # Create S3 bucket if it doesn't exist
-        if not bucket_exists:
-            # Create S3 bucket
-            bucket = s3.Bucket(
-                self,
-                "CloudProjectBucket",
-                bucket_name="cloud10-project-bucket"
-            )
+        # # Create S3 bucket if it doesn't exist
+        # if not bucket_exists:
+        #     # Create S3 bucket
+        #     bucket = s3.Bucket(
+        #         self,
+        #         "CloudProjectBucket",
+        #         bucket_name="cloud10-project-bucket"
+        #     )
 
-            # Set bucket region
-            bucket.bucket_region = "eu-central-1"
+        #     # Set bucket region
+        #     bucket.bucket_region = "eu-central-1"
 
-        else:
-            print("S3 bucket already exists. Skipping bucket creation.")
+        # else:
+        #     print("S3 bucket already exists. Skipping bucket creation.")
 
         # Create the web server VPC
         vpc_web = ec2.Vpc(self, "Cloud10VPC",
@@ -304,9 +304,6 @@ class CloudProjectStack(Stack):
         cpu_utilization_low_alarm.add_dependency(cfn_asg)
 
 
-        
-        
-
         # Create a load balancer
         lb = elbv2.ApplicationLoadBalancer(
             self,
@@ -318,7 +315,24 @@ class CloudProjectStack(Stack):
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC)
             )
         
-        # Create a target group
+
+        # Import an existing SSL certificate
+        certificate = acm.Certificate.from_certificate_arn(
+            self,
+            "Certificate",
+            certificate_arn="arn:aws:acm:eu-central-1:017967599866:certificate/4b08e88b-3178-430e-aca1-8125ceb8c6ce",
+        )
+
+        # Add an HTTPS listener
+        https_listener = lb.add_listener(
+            "HTTPSListener",
+            port=443,
+            protocol=elbv2.ApplicationProtocol.HTTPS,
+            certificates=[certificate],
+            ssl_policy=elbv2.SslPolicy.RECOMMENDED 
+        )
+        
+        # Create a target group for the web servers
         target_group = elbv2.ApplicationTargetGroup(
              self,
             "WebServerTargetGroup",
@@ -335,7 +349,12 @@ class CloudProjectStack(Stack):
                 unhealthy_threshold_count=6,
                 interval=cdk.Duration.seconds(10)
             ))
-            
+        
+        # Add a default action to the HTTPS listener
+        https_listener.add_action(
+            "DefaultAction",
+            action=elbv2.ListenerAction.forward(target_groups=[target_group]),
+        )
                     
         # Add the target group to the load balancer
         listener = lb.add_listener(
@@ -355,8 +374,6 @@ class CloudProjectStack(Stack):
                 query="#{query}",
             ),
         )
-
-        
 
         # Output the load balancer DNS name
         cdk.CfnOutput(

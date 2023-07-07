@@ -285,3 +285,15 @@ I encountered a lot of Attribute errors and Type Erros
 Thanks to a classmate I was able to troubleshoot and find out that I was missing the autoscaling group name in one line of code.
 ## Learnings
 To try solutions that are not indicated as directly as I would like
+
+# Thursday July 7, 2023
+
+## Daily Report
+Today I attempted to make a SSL certificate and make a redirection from HTTP to my HTTPS.
+## Obstacles
+- All of a sudden my boto3 module no longer works.
+- I am having issues with my certificate because it is asking for a domain name. So now my stack can't successfully deploy.
+## Solutions
+No solutions found as of yet
+## Learnings
+N/A
