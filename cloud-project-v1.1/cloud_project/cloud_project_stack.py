@@ -1,7 +1,7 @@
 from aws_cdk import Stack, aws_s3 as s3, aws_ec2 as ec2, aws_rds as rds, aws_secretsmanager as sm, aws_backup as backup, aws_iam as iam, aws_elasticloadbalancingv2 as elbv2, aws_autoscaling as autoscaling, aws_cloudwatch as cloudwatch, aws_certificatemanager as acm
 import aws_cdk as cdk
 import aws_cdk.aws_kms as kms
-from aws_cdk.aws_ec2 import AmazonLinuxImage, AmazonLinuxGeneration, InstanceClass, InstanceSize, InstanceType, UserData
+from aws_cdk.aws_ec2 import AmazonLinuxImage, AmazonLinuxGeneration, InstanceClass, InstanceSize, InstanceType, WindowsImage, WindowsVersion, UserData
 from constructs import Construct
 import json
 import boto3
@@ -156,6 +156,8 @@ class CloudProjectStack(Stack):
             security_group_name="ManagementServerSG"
         )
 
+        admin_ip = "213.73.212.167/32" #replace this with your admin's public ip
+
         # Allow inbound SSH traffic from web server via transit gateway
         management_server_sg.add_ingress_rule(
             ec2.Peer.ipv4(vpc_web.vpc_cidr_block),
@@ -163,19 +165,25 @@ class CloudProjectStack(Stack):
             "Allow inbound SSH traffic from web server via transit gateway"
         )
 
+        # Allow RDP traffic between admin pc and management server
+        management_server_sg.add_ingress_rule(
+            ec2.Peer.ipv4(admin_ip),
+            ec2.Port.tcp(3389),
+            "Allow RDP access from admin IP"
+        )
+
         # Create the management server EC2 instance
         management_ec2_instance = ec2.Instance(self, "Cloud10ManagementServer",
             instance_type=InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
-            machine_image=AmazonLinuxImage(generation=AmazonLinuxGeneration.AMAZON_LINUX_2),
+            machine_image=WindowsImage(WindowsVersion.WINDOWS_SERVER_2022_ENGLISH_FULL_BASE),
             vpc=vpc_manage,
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
             block_devices=[
                 ec2.BlockDevice(
-                    device_name="/dev/xvda",
-                    volume=ec2.BlockDeviceVolume.ebs(20, encrypted=True)
+                    device_name="/dev/sda1",
+                    volume=ec2.BlockDeviceVolume.ebs(30, encrypted=True)
                 )
             ],
-            user_data=my_user_data,
             security_group=management_server_sg
         )
 
@@ -538,6 +546,39 @@ class CloudProjectStack(Stack):
             ),
             cidr_block="10.10.10.0/24",  # Modified
         )
+
+        # Add a new inbound rule in vpc_manage for RDP from the admin IP
+        ec2.CfnNetworkAclEntry(
+            self,
+            "ManagementServerNaclInboundRDPFromAdmin",
+            network_acl_id=nacl_manage.ref,
+            rule_number=300,  # A unique rule number
+            protocol=6,  # TCP
+            rule_action="allow",
+            egress=False,
+            port_range=ec2.CfnNetworkAclEntry.PortRangeProperty(
+                from_=3389,
+                to=3389
+            ),
+            cidr_block=admin_ip,  # Your admin IP
+        )
+
+        # Outbound rule in vpc_manage for RDP to management server via transit gateway
+        ec2.CfnNetworkAclEntry(
+            self,
+            "ManagementServerNaclOutboundRDP",
+            network_acl_id=nacl_manage.ref,
+            rule_number=300,  # A unique rule number
+            protocol=6,  # TCP
+            rule_action="allow",
+            egress=True,
+            port_range=ec2.CfnNetworkAclEntry.PortRangeProperty(
+                from_=3389,
+                to=3389
+            ),
+            cidr_block=vpc_manage.vpc_cidr_block,  # Modified to your VPC's CIDR block
+        )
+
 
         # Add a new outbound rule in vpc_manage for SSH traffic to the entire vpc_web CIDR block
         ec2.CfnNetworkAclEntry(
