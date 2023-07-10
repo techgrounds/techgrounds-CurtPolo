@@ -297,3 +297,32 @@ Today I attempted to make a SSL certificate and make a redirection from HTTP to 
 No solutions found as of yet
 ## Learnings
 N/A
+
+# Friday July 8, 2023
+
+## Daily Report
+Again I attempted to make a SSL certificate and make a redirection from HTTP to my HTTPS.
+## Obstacles
+Continued with these issues as well
+- All of a sudden my boto3 module no longer works.
+- I am having issues with my certificate because it is asking for a domain name. So now my stack can't successfully deploy.
+## Solutions
+No solutions found as of yet
+## Learnings
+N/A
+
+# Monday July 10, 2023
+
+## Daily Report
+Again I attempted to make a SSL certificate and make a redirection from HTTP to my HTTPS.
+
+I also worked on changing my management server from Linux to Windows and also establishing RDP connection.
+## Obstacles
+Continued with these issues as well
+- All of a sudden my boto3 module no longer works.
+- I am having issues with my certificate because it is asking for a domain name. So now my stack can't successfully deploy.
+## Solutions
+- Uninstalled boto3 and reinstalled it.
+- I used a dummy/place holder domain name in a new certificate.
+## Learnings
+- I can use a place holder domain name for testing enviorment but it's not recommended for production.
