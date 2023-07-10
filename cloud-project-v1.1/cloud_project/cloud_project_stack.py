@@ -4,36 +4,36 @@ import aws_cdk.aws_kms as kms
 from aws_cdk.aws_ec2 import AmazonLinuxImage, AmazonLinuxGeneration, InstanceClass, InstanceSize, InstanceType, UserData
 from constructs import Construct
 import json
-#import boto3
+import boto3
 
 class CloudProjectStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        # # Check if S3 bucket exists
-        # s3_client = boto3.client('s3')
-        # bucket_name = 'cloud10-project-bucket'
-        # bucket_exists = True
+        # Check if S3 bucket exists
+        s3_client = boto3.client('s3')
+        bucket_name = 'cloud10-project-bucket'
+        bucket_exists = True
 
-        # try:
-        #     s3_client.head_bucket(Bucket=bucket_name)
-        # except:
-        #     bucket_exists = False
+        try:
+            s3_client.head_bucket(Bucket=bucket_name)
+        except:
+            bucket_exists = False
 
-        # # Create S3 bucket if it doesn't exist
-        # if not bucket_exists:
-        #     # Create S3 bucket
-        #     bucket = s3.Bucket(
-        #         self,
-        #         "CloudProjectBucket",
-        #         bucket_name="cloud10-project-bucket"
-        #     )
+        # Create S3 bucket if it doesn't exist
+        if not bucket_exists:
+            # Create S3 bucket
+            bucket = s3.Bucket(
+                self,
+                "CloudProjectBucket",
+                bucket_name="cloud10-project-bucket"
+            )
 
-        #     # Set bucket region
-        #     bucket.bucket_region = "eu-central-1"
+            # Set bucket region
+            bucket.bucket_region = "eu-central-1"
 
-        # else:
-        #     print("S3 bucket already exists. Skipping bucket creation.")
+        else:
+            print("S3 bucket already exists. Skipping bucket creation.")
 
         # Create the web server VPC
         vpc_web = ec2.Vpc(self, "Cloud10VPC",
@@ -162,22 +162,6 @@ class CloudProjectStack(Stack):
             ec2.Port.tcp(22),
             "Allow inbound SSH traffic from web server via transit gateway"
         )
-
-        # # Create the EC2 web server instance
-        # ec2_instance = ec2.Instance(self, "Cloud10Webserver",
-        #     instance_type=InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
-        #     machine_image=AmazonLinuxImage(generation=AmazonLinuxGeneration.AMAZON_LINUX_2),
-        #     vpc=vpc_web,
-        #     vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
-        #     block_devices=[
-        #         ec2.BlockDevice(
-        #             device_name="/dev/xvda",
-        #             volume=ec2.BlockDeviceVolume.ebs(20, encrypted=True)
-        #         )
-        #     ],
-        #     user_data=my_user_data,
-        #     security_group=web_server_sg
-        # )
 
         # Create the management server EC2 instance
         management_ec2_instance = ec2.Instance(self, "Cloud10ManagementServer",
@@ -315,12 +299,30 @@ class CloudProjectStack(Stack):
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC)
             )
         
+        # Add the target group to the load balancer
+        listener = lb.add_listener(
+            "MyListener",
+            port=80,
+            open=True,
+        )
+
+        # Configure the HTTP Listener to redirect requests to HTTPS
+        listener.add_action(
+            "HTTPSRedirect",
+            action=elbv2.ListenerAction.redirect(
+                protocol="HTTPS",
+                port="443",
+                host="#{host}",
+                path="/#{path}",
+                query="#{query}",
+            ),
+        )
 
         # Import an existing SSL certificate
         certificate = acm.Certificate.from_certificate_arn(
             self,
             "Certificate",
-            certificate_arn="arn:aws:acm:eu-central-1:017967599866:certificate/4b08e88b-3178-430e-aca1-8125ceb8c6ce",
+            certificate_arn="arn:aws:acm:eu-central-1:017967599866:certificate/233edc35-55d3-4854-9047-f50a374a84df",
         )
 
         # Add an HTTPS listener
@@ -354,25 +356,6 @@ class CloudProjectStack(Stack):
         https_listener.add_action(
             "DefaultAction",
             action=elbv2.ListenerAction.forward(target_groups=[target_group]),
-        )
-                    
-        # Add the target group to the load balancer
-        listener = lb.add_listener(
-            "MyListener",
-            port=80,
-            open=True,
-        )
-
-        # Configure the HTTP Listener to redirect requests to HTTPS
-        listener.add_action(
-            "HTTPSRedirect",
-            action=elbv2.ListenerAction.redirect(
-                protocol="HTTPS",
-                port="443",
-                host="#{host}",
-                path="/#{path}",
-                query="#{query}",
-            ),
         )
 
         # Output the load balancer DNS name
