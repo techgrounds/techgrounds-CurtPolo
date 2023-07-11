@@ -206,14 +206,6 @@ class CloudProjectStack(Stack):
         # )
 
 
-        # Define the IAM Role with SSM policy
-        ssm_role = iam.Role(
-            self, 
-            "SSMRole",
-            assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"),
-            managed_policies=[iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore")]
-)
-
         # Create an Auto Scaling group
         asg = autoscaling.AutoScalingGroup(
             self,
@@ -228,15 +220,14 @@ class CloudProjectStack(Stack):
             min_capacity=1,
             max_capacity=3,
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
-            # key_name="WebKeyPair", #If I want to use Key Pairs to SSH
+            key_name="WebKeyPair", #If I want to use Key Pairs to SSH
             block_devices=[
                 autoscaling.BlockDevice(
                     device_name="/dev/xvda",
                     volume=autoscaling.BlockDeviceVolume.ebs(20, encrypted=True)
                 )
             ],
-            # Add the role to your Auto Scaling Group
-            role=ssm_role
+            
         )
 
         # Get the underlying CfnAutoScalingGroup object (to eliminate the type error in the dependency)

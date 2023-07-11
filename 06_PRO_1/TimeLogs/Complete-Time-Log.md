@@ -326,3 +326,17 @@ Continued with these issues as well
 - I used a dummy/place holder domain name in a new certificate.
 ## Learnings
 - I can use a place holder domain name for testing enviorment but it's not recommended for production.
+
+# Monday July 11, 2023
+
+## Daily Report
+- I successfully tested my RDP connection between my PC and the management server.
+- I am attempting to now SSH via my management server to my web server.
+- I am testing my autoscaling group
+## Obstacles
+- my SSH to the web server via my management server times out.
+## Solutions
+
+## Learnings
+- I did learn I can use a Session Manager to achieve the same connection results without using SSH.
+- I learned about the possiblity of using Instance Connect Endpoints.
