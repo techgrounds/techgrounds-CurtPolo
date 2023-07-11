@@ -178,6 +178,7 @@ class CloudProjectStack(Stack):
             machine_image=WindowsImage(WindowsVersion.WINDOWS_SERVER_2022_ENGLISH_FULL_BASE),
             vpc=vpc_manage,
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+            key_name="ManageKeyPair", # Name of the key pair used for the SSH / RDP connection
             block_devices=[
                 ec2.BlockDevice(
                     device_name="/dev/sda1",
@@ -218,6 +219,7 @@ class CloudProjectStack(Stack):
             min_capacity=1,
             max_capacity=3,
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
+            key_name="WebKeyPair",
             block_devices=[
                 autoscaling.BlockDevice(
                     device_name="/dev/xvda",
