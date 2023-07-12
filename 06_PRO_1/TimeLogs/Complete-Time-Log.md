@@ -327,7 +327,7 @@ Continued with these issues as well
 ## Learnings
 - I can use a place holder domain name for testing enviorment but it's not recommended for production.
 
-# Monday July 11, 2023
+# Tuesday July 11, 2023
 
 ## Daily Report
 - I successfully tested my RDP connection between my PC and the management server.
@@ -340,3 +340,14 @@ Continued with these issues as well
 ## Learnings
 - I did learn I can use a Session Manager to achieve the same connection results without using SSH.
 - I learned about the possiblity of using Instance Connect Endpoints.
+
+# Wednesday July 12, 2023
+
+## Daily Report
+I continued with trying to resolve the issue with being able to SSH into the web server
+## Obstacles
+- my SSH to the web server via my management server times out.
+## Solutions
+- I made a new key pair seeing that for some reason the other was currupt.
+## Learnings
+- Learned from a colleague about a way I can have the key.pem file on my pc without having to copy it to the management server.
