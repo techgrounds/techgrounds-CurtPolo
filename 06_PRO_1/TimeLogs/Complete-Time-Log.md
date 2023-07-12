@@ -336,7 +336,7 @@ Continued with these issues as well
 ## Obstacles
 - my SSH to the web server via my management server times out.
 ## Solutions
-
+- have not found a soultion for it yet
 ## Learnings
 - I did learn I can use a Session Manager to achieve the same connection results without using SSH.
 - I learned about the possiblity of using Instance Connect Endpoints.

@@ -664,12 +664,23 @@ class CloudProjectStack(Stack):
             value=transit_gateway.ref
         )
 
-        # TEST Add transit gateway routes to public subnets of vpc_manage
+        # Add transit gateway routes to public subnets of vpc_manage
         for index, subnet in enumerate(vpc_manage.public_subnets):
             route_table_id = subnet.route_table.route_table_id
             route = ec2.CfnRoute(
                 self, f'PublicSubnetTransitGatewayRoute{index}',
                 destination_cidr_block='10.10.10.0/24',
+                route_table_id=route_table_id,
+                transit_gateway_id=transit_gateway.ref
+            )
+            route.add_dependency(transit_gateway_dependency)
+
+        # Add transit gateway routes to private subnets of vpc_web
+        for index, subnet in enumerate(vpc_web.private_subnets):
+            route_table_id = subnet.route_table.route_table_id
+            route = ec2.CfnRoute(
+                self, f'PrivateSubnetTransitGatewayRoute{index}',
+                destination_cidr_block='10.20.20.0/24',
                 route_table_id=route_table_id,
                 transit_gateway_id=transit_gateway.ref
             )
