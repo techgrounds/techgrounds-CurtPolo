@@ -72,12 +72,21 @@ class CloudProjectStack(Stack):
             ),
         )
 
-        # Read the user data script file
+        # Read the user data script file for web server
         with open('user-data.sh', 'r') as file:
             user_data_script = file.read()
 
-        # Create custom UserData from the script
-        my_user_data = ec2.UserData.custom(user_data_script)
+        # Create custom UserData from the script for web server
+        web_user_data = ec2.UserData.custom(user_data_script)
+
+        # TEST Read the user data script file for management server
+        with open('user-data-manageserv.sh', 'r') as file:
+            user_data_manage_script = file.read()
+
+        # TEST Create custom UserData from the script for management server
+        manage_user_data = ec2.UserData.custom(user_data_manage_script)
+
+
 
         # Create load balancer security group
         load_balancer_sg = ec2.SecurityGroup(
@@ -172,10 +181,48 @@ class CloudProjectStack(Stack):
             "Allow RDP access from admin IP"
         )
 
+        # Create a security group for the RDS Database
+        rds_database_sg = ec2.SecurityGroup(
+            self, "RDSDatabaseSG",
+            vpc=vpc_web,
+            allow_all_outbound=False,
+            security_group_name="RDSDatabaseSG"
+        )
+
+        # TEST Allow inbound MySQL traffic from web server.
+        rds_database_sg.add_ingress_rule(
+            ec2.Peer.ipv4(vpc_web.vpc_cidr_block), # See if I can change this to the web server security group later.
+            ec2.Port.tcp(3306),
+            "Allow inbound MySQL traffic from web server"
+        )
+
+        # TEST Allow inbound SSH traffic from management server. 
+        rds_database_sg.add_ingress_rule(
+            ec2.Peer.ipv4(vpc_manage.vpc_cidr_block), # See if I can change this to the management server security group later.
+            ec2.Port.tcp(22),
+            "Allow inbound SSH traffic from management server"
+        )
+
+        # TEST Allow outbound MySQL traffic from web server.
+        rds_database_sg.add_egress_rule(
+            ec2.Peer.ipv4(vpc_web.vpc_cidr_block), # See if I can change this to the web server security group later.
+            ec2.Port.tcp(3306),
+            "Allow outbound MySQL traffic from web server"
+        )
+
+        # TEST Allow outbound SSH traffic from management server. 
+        rds_database_sg.add_egress_rule(
+            ec2.Peer.ipv4(vpc_manage.vpc_cidr_block), # See if I can change this to the management server security group later.
+            ec2.Port.tcp(22),
+            "Allow outbound SSH traffic from management server"
+        )
+
+
         # Create the management server EC2 instance
         management_ec2_instance = ec2.Instance(self, "Cloud10ManagementServer",
             instance_type=InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
             machine_image=WindowsImage(WindowsVersion.WINDOWS_SERVER_2022_ENGLISH_FULL_BASE),
+            user_data=manage_user_data,
             vpc=vpc_manage,
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
             key_name="ManageKeyPair", # Name of the key pair used for the SSH / RDP connection
@@ -188,22 +235,23 @@ class CloudProjectStack(Stack):
             security_group=management_server_sg
         )
 
-        # # Create the RDS instance
-        # rds_instance = rds.DatabaseInstance(self, "Cloud10WSDatabase",
-        #     engine=rds.DatabaseInstanceEngine.mysql(version=rds.MysqlEngineVersion.VER_8_0),
-        #     instance_type=ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.SMALL),
-        #     vpc=vpc_web,
-        #     vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
-        #     publicly_accessible=False,
-        #     multi_az=True,
-        #     allocated_storage=20,
-        #     storage_type=rds.StorageType.GP2,
-        #     cloudwatch_logs_exports=["audit", "error", "general"],
-        #     deletion_protection=False,
-        #     database_name='Cloud10WSDatabase',
-        #     credentials=rds.Credentials.from_secret(secret),
-        #     storage_encrypted=True
-        # )
+        # Create the RDS instance
+        rds_instance = rds.DatabaseInstance(self, "Cloud10WSDatabase",
+            engine=rds.DatabaseInstanceEngine.mysql(version=rds.MysqlEngineVersion.VER_8_0),
+            instance_type=ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.SMALL),
+            vpc=vpc_web,
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
+            publicly_accessible=False,
+            multi_az=True,
+            allocated_storage=20,
+            storage_type=rds.StorageType.GP2,
+            cloudwatch_logs_exports=["audit", "error", "general"],
+            deletion_protection=False,
+            database_name='Cloud10WSDatabase',
+            credentials=rds.Credentials.from_secret(secret),
+            security_groups=[rds_database_sg], # this one says security_groups and not security_group like the others.
+            storage_encrypted=True
+        )
 
 
         # Create an Auto Scaling group
@@ -214,7 +262,7 @@ class CloudProjectStack(Stack):
             vpc=vpc_web,
             instance_type=InstanceType.of(InstanceClass.BURSTABLE3, InstanceSize.MICRO),
             machine_image=AmazonLinuxImage(generation=AmazonLinuxGeneration.AMAZON_LINUX_2),
-            user_data=my_user_data,
+            user_data=web_user_data,
             security_group=web_server_sg,
             desired_capacity=1,
             min_capacity=1,
