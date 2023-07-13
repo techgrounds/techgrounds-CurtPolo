@@ -235,23 +235,23 @@ class CloudProjectStack(Stack):
             security_group=management_server_sg
         )
 
-        # Create the RDS instance
-        rds_instance = rds.DatabaseInstance(self, "Cloud10WSDatabase",
-            engine=rds.DatabaseInstanceEngine.mysql(version=rds.MysqlEngineVersion.VER_8_0),
-            instance_type=ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.SMALL),
-            vpc=vpc_web,
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
-            publicly_accessible=False,
-            multi_az=True,
-            allocated_storage=20,
-            storage_type=rds.StorageType.GP2,
-            cloudwatch_logs_exports=["audit", "error", "general"],
-            deletion_protection=False,
-            database_name='Cloud10WSDatabase',
-            credentials=rds.Credentials.from_secret(secret),
-            security_groups=[rds_database_sg], # this one says security_groups and not security_group like the others.
-            storage_encrypted=True
-        )
+        # # Create the RDS instance
+        # rds_instance = rds.DatabaseInstance(self, "Cloud10WSDatabase",
+        #     engine=rds.DatabaseInstanceEngine.mysql(version=rds.MysqlEngineVersion.VER_8_0),
+        #     instance_type=ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.SMALL),
+        #     vpc=vpc_web,
+        #     vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
+        #     publicly_accessible=False,
+        #     multi_az=True,
+        #     allocated_storage=20,
+        #     storage_type=rds.StorageType.GP2,
+        #     cloudwatch_logs_exports=["audit", "error", "general"],
+        #     deletion_protection=False,
+        #     database_name='Cloud10WSDatabase',
+        #     credentials=rds.Credentials.from_secret(secret),
+        #     security_groups=[rds_database_sg], # this one says security_groups and not security_group like the others.
+        #     storage_encrypted=True
+        # )
 
 
         # Create an Auto Scaling group
