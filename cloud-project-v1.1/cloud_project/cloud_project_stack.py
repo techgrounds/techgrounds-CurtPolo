@@ -61,6 +61,13 @@ class CloudProjectStack(Stack):
             nat_gateways=1,
         )
 
+        # Create a transit gateway
+        transit_gateway = ec2.CfnTransitGateway(
+            self,
+            "TransitGateway",
+            amazon_side_asn=64512
+        )
+
         # Create a secret in AWS Secrets Manager
         secret = sm.Secret(self, "Cloud10WSDatabaseSecret",
             description="Password for Cloud10WSDatabase",
@@ -646,13 +653,6 @@ class CloudProjectStack(Stack):
                 to=22
             ),
             cidr_block=vpc_web.vpc_cidr_block,
-        )
-
-        # Create a transit gateway
-        transit_gateway = ec2.CfnTransitGateway(
-            self,
-            "TransitGateway",
-            amazon_side_asn=64512
         )
 
         # TEST Add a dependency between the transit gateway and the route creation loop
