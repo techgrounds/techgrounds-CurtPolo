@@ -351,3 +351,16 @@ I continued with trying to resolve the issue with being able to SSH into the web
 - I made a new key pair seeing that for some reason the other was currupt.
 ## Learnings
 - Learned from a colleague about a way I can have the key.pem file on my pc without having to copy it to the management server.
+
+# Wednesday July 13, 2023
+
+## Daily Report
+- Added the user date for the management server
+- Made a security group for the RDS database
+- came to the decision to use lambda to deploy the post deployment script
+## Obstacles
+- when attempting to deploy my stack with the database, my transit gateway route table was made before my transit gateway and everything failed.
+## Solutions
+- I moved the part of the code that creates the transit gateway further up in the stack.
+## Learnings
+- found out I can use lambda for the post deployment script instead of the s3 bucket.
