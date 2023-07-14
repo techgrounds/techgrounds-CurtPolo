@@ -10,6 +10,7 @@ class CloudProjectStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
+         
         # # Check if S3 bucket exists
         # s3_client = boto3.client('s3')
         # bucket_name = 'cloud10-project-bucket'
