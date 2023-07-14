@@ -195,6 +195,13 @@ class CloudProjectStack(Stack):
             "Allow RDP access from admin IP"
         )
 
+        # Allow inbound MySQL traffic from the database via transit gateway
+        management_server_sg.add_ingress_rule(
+            ec2.Peer.ipv4(vpc_web.vpc_cidr_block),
+            ec2.Port.tcp(3306),
+            "Allow inbound SSH traffic from web server via transit gateway"
+        )
+
         # Create a security group for the RDS Database
         rds_database_sg = ec2.SecurityGroup(
             self, "RDSDatabaseSG",
@@ -210,10 +217,10 @@ class CloudProjectStack(Stack):
             "Allow inbound MySQL traffic from web server"
         )
 
-        # TEST Allow inbound SSH traffic from management server. 
+        # TEST Allow inbound MySQL traffic from management server. 
         rds_database_sg.add_ingress_rule(
             ec2.Peer.ipv4(vpc_manage.vpc_cidr_block), # See if I can change this to the management server security group later.
-            ec2.Port.tcp(22),
+            ec2.Port.tcp(3306),
             "Allow inbound SSH traffic from management server"
         )
 
@@ -224,10 +231,10 @@ class CloudProjectStack(Stack):
             "Allow outbound MySQL traffic from web server"
         )
 
-        # TEST Allow outbound SSH traffic from management server. 
+        # TEST Allow outbound MySQL traffic from management server. 
         rds_database_sg.add_egress_rule(
             ec2.Peer.ipv4(vpc_manage.vpc_cidr_block), # See if I can change this to the management server security group later.
-            ec2.Port.tcp(22),
+            ec2.Port.tcp(3306),
             "Allow outbound SSH traffic from management server"
         )
 
@@ -257,7 +264,7 @@ class CloudProjectStack(Stack):
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
             publicly_accessible=False,
             multi_az=True,
-            allocated_storage=20,
+            allocated_storage=10,
             storage_type=rds.StorageType.GP2,
             cloudwatch_logs_exports=["audit", "error", "general"],
             deletion_protection=False,
