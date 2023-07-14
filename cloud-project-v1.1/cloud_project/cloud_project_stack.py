@@ -4,36 +4,36 @@ import aws_cdk.aws_kms as kms
 from aws_cdk.aws_ec2 import AmazonLinuxImage, AmazonLinuxGeneration, InstanceClass, InstanceSize, InstanceType, WindowsImage, WindowsVersion, UserData
 from constructs import Construct
 import json
-import boto3
+# import boto3
 
 class CloudProjectStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        # Check if S3 bucket exists
-        s3_client = boto3.client('s3')
-        bucket_name = 'cloud10-project-bucket'
-        bucket_exists = True
+        # # Check if S3 bucket exists
+        # s3_client = boto3.client('s3')
+        # bucket_name = 'cloud10-project-bucket'
+        # bucket_exists = True
 
-        try:
-            s3_client.head_bucket(Bucket=bucket_name)
-        except:
-            bucket_exists = False
+        # try:
+        #     s3_client.head_bucket(Bucket=bucket_name)
+        # except:
+        #     bucket_exists = False
 
-        # Create S3 bucket if it doesn't exist
-        if not bucket_exists:
-            # Create S3 bucket
-            bucket = s3.Bucket(
-                self,
-                "CloudProjectBucket",
-                bucket_name="cloud10-project-bucket"
-            )
+        # # Create S3 bucket if it doesn't exist
+        # if not bucket_exists:
+        #     # Create S3 bucket
+        #     bucket = s3.Bucket(
+        #         self,
+        #         "CloudProjectBucket",
+        #         bucket_name="cloud10-project-bucket"
+        #     )
 
-            # Set bucket region
-            bucket.bucket_region = "eu-central-1"
+        #     # Set bucket region
+        #     bucket.bucket_region = "eu-central-1"
 
-        else:
-            print("S3 bucket already exists. Skipping bucket creation.")
+        # else:
+        #     print("S3 bucket already exists. Skipping bucket creation.")
 
         # Create the web server VPC
         vpc_web = ec2.Vpc(self, "Cloud10VPC",
@@ -188,6 +188,13 @@ class CloudProjectStack(Stack):
             "Allow RDP access from admin IP"
         )
 
+        # Allow SSH traffic between admin pc and management server
+        management_server_sg.add_ingress_rule(
+            ec2.Peer.ipv4(admin_ip),
+            ec2.Port.tcp(22),
+            "Allow RDP access from admin IP"
+        )
+
         # Create a security group for the RDS Database
         rds_database_sg = ec2.SecurityGroup(
             self, "RDSDatabaseSG",
@@ -232,7 +239,7 @@ class CloudProjectStack(Stack):
             user_data=manage_user_data,
             vpc=vpc_manage,
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
-            key_name="ManageKeyPair", # Name of the key pair used for the SSH / RDP connection
+            key_name="NewManageKeyPair", # Name of the key pair used for the SSH / RDP connection
             block_devices=[
                 ec2.BlockDevice(
                     device_name="/dev/sda1",
@@ -242,23 +249,23 @@ class CloudProjectStack(Stack):
             security_group=management_server_sg
         )
 
-        # # Create the RDS instance
-        # rds_instance = rds.DatabaseInstance(self, "Cloud10WSDatabase",
-        #     engine=rds.DatabaseInstanceEngine.mysql(version=rds.MysqlEngineVersion.VER_8_0),
-        #     instance_type=ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.SMALL),
-        #     vpc=vpc_web,
-        #     vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
-        #     publicly_accessible=False,
-        #     multi_az=True,
-        #     allocated_storage=20,
-        #     storage_type=rds.StorageType.GP2,
-        #     cloudwatch_logs_exports=["audit", "error", "general"],
-        #     deletion_protection=False,
-        #     database_name='Cloud10WSDatabase',
-        #     credentials=rds.Credentials.from_secret(secret),
-        #     security_groups=[rds_database_sg], # this one says security_groups and not security_group like the others.
-        #     storage_encrypted=True
-        # )
+        # Create the RDS instance
+        rds_instance = rds.DatabaseInstance(self, "Cloud10WSDatabase",
+            engine=rds.DatabaseInstanceEngine.mysql(version=rds.MysqlEngineVersion.VER_8_0),
+            instance_type=ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.SMALL),
+            vpc=vpc_web,
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
+            publicly_accessible=False,
+            multi_az=True,
+            allocated_storage=20,
+            storage_type=rds.StorageType.GP2,
+            cloudwatch_logs_exports=["audit", "error", "general"],
+            deletion_protection=False,
+            database_name='Cloud10WSDatabase',
+            credentials=rds.Credentials.from_secret(secret),
+            security_groups=[rds_database_sg], # this one says security_groups and not security_group like the others.
+            storage_encrypted=True
+        )
 
 
         # Create an Auto Scaling group
