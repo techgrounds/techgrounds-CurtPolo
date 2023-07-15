@@ -352,7 +352,7 @@ I continued with trying to resolve the issue with being able to SSH into the web
 ## Learnings
 - Learned from a colleague about a way I can have the key.pem file on my pc without having to copy it to the management server.
 
-# Wednesday July 13, 2023
+# Thursday July 13, 2023
 
 ## Daily Report
 - Added the user date for the management server
@@ -364,3 +364,16 @@ I continued with trying to resolve the issue with being able to SSH into the web
 - I moved the part of the code that creates the transit gateway further up in the stack.
 ## Learnings
 - found out I can use lambda for the post deployment script instead of the s3 bucket.
+
+# Friday July 14, 2023
+
+## Daily Report
+- Succesfully tested the connection to the database via my management server
+- Looked into the lambda for the post deployment script
+- attempted to find a way to create an interactive input for the admin IP
+## Obstacles
+- running into several errors everytime I attempt to make an input function.
+## Solutions
+- I have found no suitable solution for the input yet
+## Learnings
+N/A
