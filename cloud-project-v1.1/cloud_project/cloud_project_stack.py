@@ -1,10 +1,11 @@
-from aws_cdk import Stack, aws_s3 as s3, aws_ec2 as ec2, aws_rds as rds, aws_secretsmanager as sm, aws_backup as backup, aws_iam as iam, aws_elasticloadbalancingv2 as elbv2, aws_autoscaling as autoscaling, aws_cloudwatch as cloudwatch, aws_certificatemanager as acm
+from aws_cdk import Stack, aws_s3 as s3, aws_ec2 as ec2, aws_rds as rds, aws_secretsmanager as sm, aws_backup as backup, aws_iam as iam, aws_elasticloadbalancingv2 as elbv2, aws_autoscaling as autoscaling, aws_cloudwatch as cloudwatch, aws_certificatemanager as acm, aws_lambda as lambda_
 import aws_cdk as cdk
 import aws_cdk.aws_kms as kms
 from aws_cdk.aws_ec2 import AmazonLinuxImage, AmazonLinuxGeneration, InstanceClass, InstanceSize, InstanceType, WindowsImage, WindowsVersion, UserData
 from constructs import Construct
 import json
 # import boto3
+# import os #TEST for lambda function
 
 class CloudProjectStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
@@ -80,6 +81,12 @@ class CloudProjectStack(Stack):
             ),
         )
 
+        # # TEST Create a VPC endpoint for Secrets Manager
+        # secretsmanager_endpoint = self.web_vpc.add_interface_endpoint(
+        #     "SecretsManagerEndpoint",
+        #     service=ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
+        # )
+
         # Read the user data script file for web server
         with open('user-data.sh', 'r') as file:
             user_data_script = file.read()
@@ -87,11 +94,11 @@ class CloudProjectStack(Stack):
         # Create custom UserData from the script for web server
         web_user_data = ec2.UserData.custom(user_data_script)
 
-        # TEST Read the user data script file for management server
+        # Read the user data script file for management server
         with open('user-data-manageserv.sh', 'r') as file:
             user_data_manage_script = file.read()
 
-        # TEST Create custom UserData from the script for management server
+        # Create custom UserData from the script for management server
         manage_user_data = ec2.UserData.custom(user_data_manage_script)
 
 
@@ -257,23 +264,41 @@ class CloudProjectStack(Stack):
             security_group=management_server_sg
         )
 
-        # Create the RDS instance
-        rds_instance = rds.DatabaseInstance(self, "Cloud10WSDatabase",
-            engine=rds.DatabaseInstanceEngine.mysql(version=rds.MysqlEngineVersion.VER_8_0),
-            instance_type=ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.SMALL),
+        # # Create the RDS instance
+        # rds_instance = rds.DatabaseInstance(self, "Cloud10WSDatabase",
+        #     engine=rds.DatabaseInstanceEngine.mysql(version=rds.MysqlEngineVersion.VER_8_0),
+        #     instance_type=ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.SMALL),
+        #     vpc=vpc_web,
+        #     vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
+        #     publicly_accessible=False,
+        #     multi_az=True,
+        #     allocated_storage=10,
+        #     storage_type=rds.StorageType.GP2,
+        #     cloudwatch_logs_exports=["audit", "error", "general"],
+        #     deletion_protection=False,
+        #     database_name='Cloud10WSDatabase',
+        #     credentials=rds.Credentials.from_secret(secret),
+        #     security_groups=[rds_database_sg], # this one says security_groups and not security_group like the others.
+        #     storage_encrypted=True
+        # )
+
+        # TEST Create the Aurora instance database
+        aurora_cluster = rds.ServerlessCluster(
+            self, "Cloud10AuroraCluster",
+            engine=rds.DatabaseClusterEngine.aurora_mysql(version=rds.AuroraMysqlEngineVersion.VER_2_09_2),
             vpc=vpc_web,
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
-            publicly_accessible=False,
-            multi_az=True,
-            allocated_storage=10,
-            storage_type=rds.StorageType.GP2,
-            cloudwatch_logs_exports=["audit", "error", "general"],
-            deletion_protection=False,
-            database_name='Cloud10WSDatabase',
+            removal_policy=cdk.RemovalPolicy.DESTROY,
             credentials=rds.Credentials.from_secret(secret),
-            security_groups=[rds_database_sg], # this one says security_groups and not security_group like the others.
-            storage_encrypted=True
+            security_groups=[rds_database_sg],
+            default_database_name='Cloud10WSDatabase',
+            scaling=rds.ServerlessScalingOptions(
+                auto_pause=cdk.Duration.minutes(5),
+                min_capacity=rds.AuroraCapacityUnit.ACU_1,
+                max_capacity=rds.AuroraCapacityUnit.ACU_8
+            )
         )
+
 
 
         # Create an Auto Scaling group
@@ -670,7 +695,7 @@ class CloudProjectStack(Stack):
             cidr_block=vpc_web.vpc_cidr_block,
         )
 
-        # TEST Add a dependency between the transit gateway and the route creation loop
+        # Add a dependency between the transit gateway and the route creation loop
         transit_gateway_dependency = ec2.CfnTransitGatewayRouteTable(
             self,
             "TransitGatewayDependency",
@@ -749,3 +774,22 @@ class CloudProjectStack(Stack):
             )
             route.add_dependency(transit_gateway_dependency)
 
+
+        # # TEST Create the IAM role for the Lambda function
+        # lambda_role = iam.Role(
+        #     self,
+        #     "LambdaRole",
+        #     assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
+        # )
+
+        # # TEST Add permissions to the IAM role
+        # lambda_role.add_to_policy(
+        #     iam.PolicyStatement(
+        #         effect=iam.Effect.ALLOW,
+        #         actions=[
+        #             "rds:*",
+        #             "secretsmanager:*",
+        #         ],
+        #         resources=["*"],
+        #     )
+        # )

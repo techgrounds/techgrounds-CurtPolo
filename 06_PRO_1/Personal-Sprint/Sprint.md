@@ -69,7 +69,11 @@ My goal is to finish the following V1.0 tasks that are essential to V1.1
 # Week 6
 
 ## Goal
-
+In this week I would like to finish the following by Thursday
+- add a post deployment script using Lambda
+- backup the database
+- adjust the documentations
+- make teh final drawing
 ## Methods
 
 ## Metrics

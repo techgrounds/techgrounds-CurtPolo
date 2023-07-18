@@ -15,21 +15,45 @@ Get-NetFirewallRule -Name *ssh*
 # If the firewall rule is not configured, run the following command
 New-NetFirewallRule -Name sshd -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22
 
-# Install SMS
-# https://en.wikiversity.org/wiki/PowerShell/Examples/Install-SQLServerManagementStudio
-# This script installs SQL Server Management Studio.
-function Install-SQLServerManagementStudio {
-    Write-Host "Downloading SQL Server Management Studio..."
-    $Path = $env:TEMP
-    $Installer = "SSMS-Setup-ENU.exe"
-    $URL = "https://aka.ms/ssmsfullsetup"
-    Invoke-WebRequest $URL -OutFile $Path\$Installer
+# Disable IE ESC for Administrators
+$AdminKey = "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A7-37EF-4b3f-8CFC-4F3A74704073}"
+$AdminValueName = "IsInstalled"
+Set-ItemProperty -Path $AdminKey -Name $AdminValueName -Value 0
 
-    Write-Host "Installing SQL Server Management Studio..."
-    Start-Process -FilePath $Path\$Installer -Args "/install /quiet" -Verb RunAs -Wait
-    Remove-Item $Path\$Installer
-}
+# Disable IE ESC for Users
+$UserKey = "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A8-37EF-4b3f-8CFC-4F3A74704073}"
+$UserValueName = "IsInstalled"
+Set-ItemProperty -Path $UserKey -Name $UserValueName -Value 0
 
-Install-SQLServerManagementStudio
+# Restart Windows Explorer to apply the changes
+Stop-Process -Name explorer -Force
+Start-Sleep -Seconds 3
+Start-Process -FilePath explorer
 
+
+# Install Chocolatey
+Set-ExecutionPolicy Bypass -Scope Process -Force
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+
+# Update the package list
+choco upgrade chocolatey -y
+
+# Install MySQL Workbench
+choco install mysql.workbench -y
+
+# Re-enable IE ESC for Administrators
+$AdminKey = "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A7-37EF-4b3f-8CFC-4F3A74704073}"
+$AdminValueName = "IsInstalled"
+Set-ItemProperty -Path $AdminKey -Name $AdminValueName -Value 1
+
+# Re-enable IE ESC for Users
+$UserKey = "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A8-37EF-4b3f-8CFC-4F3A74704073}"
+$UserValueName = "IsInstalled"
+Set-ItemProperty -Path $UserKey -Name $UserValueName -Value 1
+
+# Restart Windows Explorer to apply the changes
+Stop-Process -Name explorer -Force
+Start-Sleep -Seconds 3
+Start-Process -FilePath explorer
 </powershell>
