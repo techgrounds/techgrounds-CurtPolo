@@ -1,9 +1,10 @@
-from aws_cdk import Stack, aws_s3 as s3, aws_ec2 as ec2, aws_rds as rds, aws_secretsmanager as sm, aws_backup as backup, aws_iam as iam, aws_elasticloadbalancingv2 as elbv2, aws_autoscaling as autoscaling, aws_cloudwatch as cloudwatch, aws_certificatemanager as acm, aws_lambda as lambda_
+from aws_cdk import Stack, aws_s3 as s3, aws_ec2 as ec2, aws_rds as rds, aws_secretsmanager as sm, aws_backup as backup, aws_iam as iam, aws_elasticloadbalancingv2 as elbv2, aws_autoscaling as autoscaling, aws_cloudwatch as cloudwatch, aws_certificatemanager as acm, aws_lambda as _lambda, aws_dms as dms
 import aws_cdk as cdk
 import aws_cdk.aws_kms as kms
 from aws_cdk.aws_ec2 import AmazonLinuxImage, AmazonLinuxGeneration, InstanceClass, InstanceSize, InstanceType, WindowsImage, WindowsVersion, UserData
 from constructs import Construct
 import json
+import os
 # import boto3
 # import os #TEST for lambda function
 
@@ -297,7 +298,25 @@ class CloudProjectStack(Stack):
                 min_capacity=rds.AuroraCapacityUnit.ACU_1,
                 max_capacity=rds.AuroraCapacityUnit.ACU_8
             )
+            #storage_encrypted=True  # Enable encryption at rest
         )
+
+
+        # # TEST Output the ARN of the Aurora cluster
+        # cdk.CfnOutput(
+        #     self,
+        #     "AuroraClusterARN",
+        #     value=aurora_cluster.cluster_arn,
+        #     description="ARN of the Amazon Aurora cluster",
+        # )
+
+        # # TEST Output the endpoint of the Aurora cluster
+        # cdk.CfnOutput(
+        #     self,
+        #     "AuroraClusterEndpoint",
+        #     value=aurora_cluster.cluster_endpoint,
+        #     description="Endpoint of the Amazon Aurora cluster",
+        # )
 
 
 
@@ -775,6 +794,9 @@ class CloudProjectStack(Stack):
             route.add_dependency(transit_gateway_dependency)
 
 
+
+        
+
         # # TEST Create the IAM role for the Lambda function
         # lambda_role = iam.Role(
         #     self,
@@ -792,4 +814,67 @@ class CloudProjectStack(Stack):
         #         ],
         #         resources=["*"],
         #     )
+        # )
+
+        # # read my sql post-deployment script
+        # with open('post-deploymentscript.sql', 'r') as file:
+        #     sql_code = file.read()
+
+        # # Read the table-mappings.json file
+        # with open('table-mappings.json', 'r') as file:
+        #     table_mappings_1 = file.read()
+
+
+        # # Create a DMS task
+        # dms_task = dms.DatabaseMigrationTask(
+        #     self,
+        #     "DmsTask",
+        #     migration_task_name="MyDmsTask",
+        #     replication_instance=dms.ReplicationInstance.from_replication_instance_arn(
+        #         self,
+        #         "DmsReplicationInstance",
+        #         replication_instance_arn=aurora_cluster.cluster_arn,
+        #     ),
+        #     source_endpoint=dms.Endpoint(
+        #         self,
+        #         "SourceEndpoint",
+        #         endpoint_identifier="SourceEndpoint",
+        #         endpoint_type=dms.EndpointType.SOURCE,
+        #         engine_name=dms.DatabaseEngineName.aurora_mysql,
+        #         database_name="Cloud10WSDatabase",
+        #         port=3306,
+        #     ),
+        #     target_endpoint=dms.Endpoint(
+        #         self,
+        #         "TargetEndpoint",
+        #         endpoint_identifier="TargetEndpoint",
+        #         endpoint_type=dms.EndpointType.TARGET,
+        #         engine_name=dms.DatabaseEngineName.aurora_mysql,
+        #         database_name="Cloud10WSDatabase",
+        #         port=3306,
+        #     ),
+        #     migration_type=dms.MigrationType.CDC,
+        #     table_mappings=table_mappings_1,
+        #     transformation_settings=[
+        #         dms.CfnReplicationTask.TransformationSettingProperty(
+        #             type="include",
+        #             value=f"targetTable=*, includeAction=execute-sql, executeSqlStatement='{sql_code}'"
+        #         )
+        #     ]
+        # )
+
+        # # Output the source endpoint identifier
+        # cdk.CfnOutput(
+        #     self,
+        #     "SourceEndpoint",
+        #     value=dms_task.source_endpoint.endpoint_identifier,
+        #     description="Source Endpoint Identifier",
+        # )
+
+        # # Output the target endpoint identifier
+        # cdk.CfnOutput(
+        #     self,
+        #     "TargetEndpoint",
+        #     value=dms_task.target_endpoint.endpoint_identifier,
+        #     description="Target Endpoint Identifier",
         # )
