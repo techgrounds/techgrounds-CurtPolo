@@ -1,8 +1,9 @@
-from aws_cdk import Stack, aws_s3 as s3, aws_ec2 as ec2, aws_rds as rds, aws_secretsmanager as sm, aws_backup as backup, aws_iam as iam, aws_elasticloadbalancingv2 as elbv2, aws_autoscaling as autoscaling, aws_cloudwatch as cloudwatch, aws_certificatemanager as acm, aws_lambda as _lambda, aws_dms as dms
+from aws_cdk import Stack, aws_s3 as s3, aws_ec2 as ec2, aws_rds as rds, aws_secretsmanager as sm, aws_backup as backup, aws_iam as iam, aws_elasticloadbalancingv2 as elbv2, aws_autoscaling as autoscaling, aws_cloudwatch as cloudwatch, aws_certificatemanager as acm, aws_events as events
 import aws_cdk as cdk
 import aws_cdk.aws_kms as kms
 from aws_cdk.aws_ec2 import AmazonLinuxImage, AmazonLinuxGeneration, InstanceClass, InstanceSize, InstanceType, WindowsImage, WindowsVersion, UserData
 from constructs import Construct
+from aws_cdk import Duration
 import json
 import os
 # import boto3
@@ -265,23 +266,6 @@ class CloudProjectStack(Stack):
             security_group=management_server_sg
         )
 
-        # # Create the RDS instance
-        # rds_instance = rds.DatabaseInstance(self, "Cloud10WSDatabase",
-        #     engine=rds.DatabaseInstanceEngine.mysql(version=rds.MysqlEngineVersion.VER_8_0),
-        #     instance_type=ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.SMALL),
-        #     vpc=vpc_web,
-        #     vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
-        #     publicly_accessible=False,
-        #     multi_az=True,
-        #     allocated_storage=10,
-        #     storage_type=rds.StorageType.GP2,
-        #     cloudwatch_logs_exports=["audit", "error", "general"],
-        #     deletion_protection=False,
-        #     database_name='Cloud10WSDatabase',
-        #     credentials=rds.Credentials.from_secret(secret),
-        #     security_groups=[rds_database_sg], # this one says security_groups and not security_group like the others.
-        #     storage_encrypted=True
-        # )
 
         # TEST Create the Aurora instance database
         aurora_cluster = rds.ServerlessCluster(
@@ -291,6 +275,7 @@ class CloudProjectStack(Stack):
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
             removal_policy=cdk.RemovalPolicy.DESTROY,
             credentials=rds.Credentials.from_secret(secret),
+            backup_retention=Duration.days(7),
             security_groups=[rds_database_sg],
             default_database_name='Cloud10WSDatabase',
             scaling=rds.ServerlessScalingOptions(
@@ -298,25 +283,8 @@ class CloudProjectStack(Stack):
                 min_capacity=rds.AuroraCapacityUnit.ACU_1,
                 max_capacity=rds.AuroraCapacityUnit.ACU_8
             )
-            #storage_encrypted=True  # Enable encryption at rest
+            
         )
-
-
-        # # TEST Output the ARN of the Aurora cluster
-        # cdk.CfnOutput(
-        #     self,
-        #     "AuroraClusterARN",
-        #     value=aurora_cluster.cluster_arn,
-        #     description="ARN of the Amazon Aurora cluster",
-        # )
-
-        # # TEST Output the endpoint of the Aurora cluster
-        # cdk.CfnOutput(
-        #     self,
-        #     "AuroraClusterEndpoint",
-        #     value=aurora_cluster.cluster_endpoint,
-        #     description="Endpoint of the Amazon Aurora cluster",
-        # )
 
 
 
@@ -793,88 +761,27 @@ class CloudProjectStack(Stack):
             )
             route.add_dependency(transit_gateway_dependency)
 
+        # Create a backup plan for MGMT Server EBS Volume:
+        backup_vault = backup.BackupVault(self, "Cloud10Backup",
+                                        backup_vault_name="BackupVaultCloud10",
+                                        removal_policy=cdk.RemovalPolicy.DESTROY
+                                        )
 
 
-        
-
-        # # TEST Create the IAM role for the Lambda function
-        # lambda_role = iam.Role(
-        #     self,
-        #     "LambdaRole",
-        #     assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
-        # )
-
-        # # TEST Add permissions to the IAM role
-        # lambda_role.add_to_policy(
-        #     iam.PolicyStatement(
-        #         effect=iam.Effect.ALLOW,
-        #         actions=[
-        #             "rds:*",
-        #             "secretsmanager:*",
-        #         ],
-        #         resources=["*"],
-        #     )
-        # )
-
-        # # read my sql post-deployment script
-        # with open('post-deploymentscript.sql', 'r') as file:
-        #     sql_code = file.read()
-
-        # # Read the table-mappings.json file
-        # with open('table-mappings.json', 'r') as file:
-        #     table_mappings_1 = file.read()
-
-
-        # # Create a DMS task
-        # dms_task = dms.DatabaseMigrationTask(
-        #     self,
-        #     "DmsTask",
-        #     migration_task_name="MyDmsTask",
-        #     replication_instance=dms.ReplicationInstance.from_replication_instance_arn(
-        #         self,
-        #         "DmsReplicationInstance",
-        #         replication_instance_arn=aurora_cluster.cluster_arn,
-        #     ),
-        #     source_endpoint=dms.Endpoint(
-        #         self,
-        #         "SourceEndpoint",
-        #         endpoint_identifier="SourceEndpoint",
-        #         endpoint_type=dms.EndpointType.SOURCE,
-        #         engine_name=dms.DatabaseEngineName.aurora_mysql,
-        #         database_name="Cloud10WSDatabase",
-        #         port=3306,
-        #     ),
-        #     target_endpoint=dms.Endpoint(
-        #         self,
-        #         "TargetEndpoint",
-        #         endpoint_identifier="TargetEndpoint",
-        #         endpoint_type=dms.EndpointType.TARGET,
-        #         engine_name=dms.DatabaseEngineName.aurora_mysql,
-        #         database_name="Cloud10WSDatabase",
-        #         port=3306,
-        #     ),
-        #     migration_type=dms.MigrationType.CDC,
-        #     table_mappings=table_mappings_1,
-        #     transformation_settings=[
-        #         dms.CfnReplicationTask.TransformationSettingProperty(
-        #             type="include",
-        #             value=f"targetTable=*, includeAction=execute-sql, executeSqlStatement='{sql_code}'"
-        #         )
-        #     ]
-        # )
-
-        # # Output the source endpoint identifier
-        # cdk.CfnOutput(
-        #     self,
-        #     "SourceEndpoint",
-        #     value=dms_task.source_endpoint.endpoint_identifier,
-        #     description="Source Endpoint Identifier",
-        # )
-
-        # # Output the target endpoint identifier
-        # cdk.CfnOutput(
-        #     self,
-        #     "TargetEndpoint",
-        #     value=dms_task.target_endpoint.endpoint_identifier,
-        #     description="Target Endpoint Identifier",
-        # )
+        backup_plan = backup.BackupPlan(self, "ManageServerBackupPlan",
+                                        backup_plan_name="ManageServerBackup",
+                                        backup_vault=backup_vault,
+                                        )
+        backup_plan.add_selection("ManageServerBackupSelection",
+                                    resources=[backup.BackupResource.from_ec2_instance(management_ec2_instance)],
+                                    
+                                    )
+        backup_rule = backup_plan.add_rule(backup.BackupPlanRule(
+                                            delete_after=Duration.days(7),
+                                            start_window=Duration.minutes(60),
+                                            completion_window=Duration.minutes(120),
+                                            # Set time is in UTC! NL Summertime = UTC +2, Wintertime = UTC +1
+                                            schedule_expression=events.Schedule.cron(
+                                                minute="00",
+                                                hour="22",))
+                                                )

@@ -50,4 +50,31 @@ Due to version 1.1 there will be some changes to the diagram.
 - A load balancer will be placed in the public subnet of my web vpc and act as proxy to my web server
 - My management server will be on a public subnet and be able to SSH to my web server via the transit gateway.
 
-# Week 6
+# Final Decisions
+
+## Why A Transit Gateway?
+- **Centralized Hub**: Transit Gateway serves as a centralized hub for connecting multiple VPCs and VPN connections. It simplifies network architecture by reducing the number of connections needed between VPCs. With VPC peering, each VPC must establish separate peering connections with every other VPC it needs to communicate with, leading to a more complex and decentralized network.
+
+- **Simplified Management**: Transit Gateway allows you to manage and monitor VPC connections from a single console. This centralized management simplifies network administration, improves visibility, and reduces the likelihood of misconfigurations that can occur when managing multiple VPC peering connections individually.
+
+- **Scalability**: Transit Gateway is designed to handle a large number of VPC connections, making it more suitable for complex and rapidly growing network architectures. As the number of VPCs and VPN connections increases, Transit Gateway remains a scalable and efficient solution, whereas VPC peering has inherent limitations in terms of the number of peering connections allowed per VPC.
+
+- **Transitive Routing**: Transit Gateway enables transitive routing, meaning traffic can flow between VPCs even if they don't have a direct peering relationship. This simplifies network design and allows for more flexible communication between VPCs, as you don't have to establish direct VPC peering connections between each pair of VPCs.
+
+- **Inter-Region Connectivity**: Transit Gateway supports inter-region peering, allowing VPCs in different AWS regions to communicate with each other seamlessly. This is not possible with VPC peering alone, which is limited to VPCs within the same AWS region.
+
+## Why Aurora?
+
+**Performance and Scalability**:
+- **Higher Performance**: Aurora is designed to deliver significantly higher performance compared to standard RDS MySQL instances. It uses a purpose-built distributed storage system that automatically scales in response to the workload, providing low-latency performance for both read and write operations.
+- **Read Replicas without Performance Impact**: In Aurora, read replicas can be created without any performance impact on the primary instance. This is because Aurora's storage architecture decouples read and write operations, enabling read replicas to serve read traffic with minimal replication lag.
+- **Automatic Scaling**: Aurora can automatically scale its storage capacity up to 64 TiB and compute capacity to accommodate increasing workloads. This automatic scaling ensures that your database can handle varying levels of demand without manual intervention.
+
+- **High Availability and Data Durability**:
+- **Multi-AZ Deployment**: Just like RDS MySQL, Aurora offers Multi-AZ (Availability Zone) deployment for high availability. However, Aurora's failover process is faster and more seamless, reducing downtime and improving overall resilience.
+- **Data Replication and Backups**: Aurora automatically replicates six copies of your data across three Availability Zones, ensuring data durability and minimizing the risk of data loss. Additionally, automated backups are continuously performed, and you can set the retention period for backups up to 35 days.
+
+- **Cost-Effectiveness**:
+- **Pay-as-you-go Model**: Aurora follows a pay-as-you-go pricing model, which means you only pay for the resources you consume. This flexibility allows you to optimize costs based on your actual database usage.
+- **Performance Efficiency**: Aurora's higher performance and scalability can lead to potential cost savings, as it can handle more workload on fewer instances compared to RDS MySQL, depending on your application's requirements.
+- **Reduced Administrative Overhead**: Aurora's automated features, such as automated backups, scaling, and failover, reduce the administrative overhead needed to manage the database, allowing you to focus on developing and optimizing your application.
