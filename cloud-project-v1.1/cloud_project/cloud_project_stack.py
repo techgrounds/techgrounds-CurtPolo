@@ -13,31 +13,6 @@ class CloudProjectStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-         
-        # # Check if S3 bucket exists
-        # s3_client = boto3.client('s3')
-        # bucket_name = 'cloud10-project-bucket'
-        # bucket_exists = True
-
-        # try:
-        #     s3_client.head_bucket(Bucket=bucket_name)
-        # except:
-        #     bucket_exists = False
-
-        # # Create S3 bucket if it doesn't exist
-        # if not bucket_exists:
-        #     # Create S3 bucket
-        #     bucket = s3.Bucket(
-        #         self,
-        #         "CloudProjectBucket",
-        #         bucket_name="cloud10-project-bucket"
-        #     )
-
-        #     # Set bucket region
-        #     bucket.bucket_region = "eu-central-1"
-
-        # else:
-        #     print("S3 bucket already exists. Skipping bucket creation.")
 
         # Create the web server VPC
         vpc_web = ec2.Vpc(self, "Cloud10VPC",
